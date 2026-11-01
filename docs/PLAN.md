@@ -18,7 +18,7 @@ Decisión: **web en TypeScript**, empaquetada con Tauri (PC) y Capacitor (celula
 | --- | --- |
 | Monorepo | pnpm workspaces |
 | Lenguaje | TypeScript estricto |
-| Mesa | PixiJS 8 (sprites, tweens, filtro CRT) |
+| Mesa | React en DOM hasta la fase 3; PixiJS 8 (sprites, tweens, filtro CRT) en la fase 4 |
 | Menús, ajustes, puntaje | React 19 + Tailwind 4 |
 | Build | Vite + vite-plugin-pwa |
 | Tests | Vitest + fast-check |
@@ -75,11 +75,12 @@ Listo cuando: el link de `ox-test` abre el cliente y CI pasa.
 Listo cuando, con tests de propiedades sobre miles de partidas al azar:
 - Cada juego cierra en 13 / 17 basas y ninguna carta se pierde ni se duplica.
 - Los totales calzan (4 / 3 jugadores): −330/−370, +310/+350, −380/−420, +660/+700, −660/−700.
-- Con 3 jugadores la fila de diamantes termina en el 3.
+- En dominó el As va bajo el 2 y, con 3 jugadores, el A♦ sigue al 3♦.
+- Dominó: siempre termina con un ganador.
 - Toda acción fuera de `legalActions` se rechaza.
 
 ### 2. Jugable de punta a punta
-- Bot fácil (carta legal al azar).
+- Bot fácil: juega como el medio el 65 % de las veces y el resto al azar.
 - Mesa funcional sin arte final: mano, basa en curso, turnos, dominó, tabla de puntaje y resumen por juego.
 - `apps/sim` corre partidas completas por CLI.
 
@@ -101,10 +102,14 @@ Listo cuando: el medio le gana al fácil de forma clara en 10.000 partidas, con 
 Listo cuando: pasa revisión con capturas en celular y escritorio.
 
 ### 5. Bot difícil
-- Matriz de posibles dueños con propagación de restricciones, en un paquete testeado aparte.
-- Determinización Monte Carlo en Web Worker, N entre 100 y 500.
-- Utilidad por posición en la partida: riesgo, dirigir castigos al líder, guardar castigos.
+Hecho:
+- Matriz de posibles dueños con propagación de restricciones, en `packages/bots/src/owners.ts`.
+- Determinización Monte Carlo en Web Worker, con 40 repartos por decisión.
+- Utilidad por posición en la partida: mide contra el líder y el promedio de los rivales.
+
+Pendiente:
 - Inferencia de intenciones (filtro de partículas) y engaño dentro de jugadas legales.
+- Ajuste de riesgo según la posición en la partida.
 - Modo debug: matriz y puntaje esperado de cada jugada.
 
 Listo cuando: le gana al medio de forma clara y responde en menos de 1 s en un celular de gama media.
@@ -112,8 +117,9 @@ Listo cuando: le gana al medio de forma clara y responde en menos de 1 s en un c
 CFR, ISMCTS y aprendizaje por refuerzo quedan fuera salvo que Monte Carlo no alcance.
 
 ### 6. Pulido y distribución
-- Guardar partida en curso.
-- Música, efectos y hápticos con ajustes independientes.
+Hecho: guardar partida en curso, historial de partidas y música con interruptor.
+
+- Efectos de sonido y hápticos con ajustes independientes.
 - Panel de conteo opcional.
 - Builds Tauri (Windows, Mac, Linux) y Capacitor (Android, iOS).
 
@@ -123,16 +129,15 @@ Listo cuando: los instaladores corren en cada plataforma objetivo.
 - Salas con código, servidor autoritativo sobre el mismo motor, bots que rellenan o reemplazan a quien se desconecta.
 - Se diseña aparte cuando las fases 1 a 5 estén cerradas.
 
-## Reglas por confirmar
+## Reglas confirmadas
 
-Se asumen así hasta que se indique lo contrario:
-
-1. Orden de cartas: 2 la más baja, As la más alta.
-2. Dominó: desde el 7 se baja hasta el 2 y se sube hasta el As.
+1. Orden de cartas en basas: 2 la más baja, As la más alta.
+2. Dominó: el As es la carta más baja. Desde el 7 se baja hasta el As y se sube hasta la K.
 3. Dominó: el juego termina apenas alguien queda sin cartas.
 4. Dominó: quien tiene jugada no puede pasar.
 5. Empate final: queda como empate, sin desempate por carta.
 6. Primer repartidor: al azar.
+7. Dominó con 3 jugadores: no existe el 2♦, así que el A♦ se juega directamente después del 3♦.
 
 ## Flujo de trabajo
 
