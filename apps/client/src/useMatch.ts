@@ -62,7 +62,7 @@ export function useMatch(
     const delay = state.game.kind === 'domino' ? DOMINO_BOT_DELAY : BOT_DELAY
     const view = viewFor(state, seat)
     const actions = legalActions(state, seat)
-    const worker = level === 'hard' ? botWorker() : null
+    const worker = level === 'easy' ? null : botWorker()
     if (!worker) {
       const timer = setTimeout(() => {
         setState(applyAction(state, BOTS[level].choose(view, actions, rng)))

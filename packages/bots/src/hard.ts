@@ -1,11 +1,21 @@
-import { RULES, applyAction, cardPoints, legalActions, scoreGame, viewFor } from '@trebol/engine'
-import type { Action, Card, GameState, MatchState, PlayerView, TrickView } from '@trebol/engine'
+import {
+  RULES,
+  applyAction,
+  cardPoints,
+  legalActions,
+  scoreGame,
+  trickWinner,
+  viewFor,
+} from '@trebol/engine'
+import type { Action, Card, GameState, MatchState, PlayerView, Seat, TrickView } from '@trebol/engine'
 import { countOut, mediumBot, unseenCards } from './medium'
 import { buildOwnerMatrix, dealHidden } from './owners'
 import type { Bot, Rng } from './types'
 
 const DEFAULT_ITERATIONS = 40
 const VALUABLE_POINTS = 50
+const SAVEABLE_HIGHER_CARDS = 3
+const ALLY_WEIGHT = 0.4
 
 function buildState(view: PlayerView, hidden: Card[][]): MatchState {
   const hands = hidden.map((hand, seat) => (seat === view.seat ? view.hand : hand))
@@ -49,11 +59,21 @@ function rollout(start: MatchState, rng: Rng): number[] {
   return scoreGame(state).points
 }
 
-function utility(view: PlayerView, gained: number[]): number {
+interface HardOptions {
+  iterations?: number
+  target?: Seat
+}
+
+function utility(view: PlayerView, gained: number[], target: Seat | undefined): number {
   const totals = gained.map(
     (points, seat) =>
       points + view.results.reduce((sum, result) => sum + result.points[seat], 0),
   )
+  if (target !== undefined) {
+    const allies = totals.filter((_, seat) => seat !== target && seat !== view.seat)
+    const allyTotal = allies.reduce((sum, total) => sum + total, 0) * ALLY_WEIGHT
+    return totals[view.seat] + allyTotal - totals[target]
+  }
   const rivals = totals.filter((_, seat) => seat !== view.seat)
   const mean = rivals.reduce((sum, total) => sum + total, 0) / rivals.length
   return totals[view.seat] - (Math.max(...rivals) + mean) / 2
@@ -71,7 +91,22 @@ function wouldGiveAway(view: TrickView, card: Card, hidden: Card[]): boolean {
   return !master && view.current.length < view.players - 1
 }
 
-function keepValuableCards(view: PlayerView, legal: Action[]): Action[] {
+function canPassToAlly(
+  view: TrickView,
+  card: Card,
+  hidden: Card[],
+  target: Seat | undefined,
+): boolean {
+  if (target === undefined || view.current.length === 0) return false
+  if (trickWinner(view.current) === target) return false
+  return countOut(card, hidden, 1) >= SAVEABLE_HIGHER_CARDS
+}
+
+function keepValuableCards(
+  view: PlayerView,
+  legal: Action[],
+  target: Seat | undefined,
+): Action[] {
   if (view.kind !== 'tricks') return legal
   const rule = RULES[view.id]
   if (rule.sign !== 1) return legal
@@ -80,22 +115,23 @@ function keepValuableCards(view: PlayerView, legal: Action[]): Action[] {
     (action) =>
       action.type !== 'play' ||
       cardPoints(action.card, rule) < VALUABLE_POINTS ||
-      !wouldGiveAway(view, action.card, hidden),
+      !wouldGiveAway(view, action.card, hidden) ||
+      canPassToAlly(view, action.card, hidden, target),
   )
   return kept.length > 0 ? kept : legal
 }
 
-export function createHardBot(iterations = DEFAULT_ITERATIONS): Bot {
+export function createHardBot({ iterations = DEFAULT_ITERATIONS, target }: HardOptions = {}): Bot {
   return {
     choose(view: PlayerView, allowed: Action[], rng: Rng): Action {
-      const legal = keepValuableCards(view, allowed)
+      const legal = keepValuableCards(view, allowed, target)
       if (legal.length === 1) return legal[0]
       const matrix = buildOwnerMatrix(view)
       const scores = legal.map(() => 0)
       for (let round = 0; round < iterations; round++) {
         const state = buildState(view, dealHidden(matrix, rng))
         legal.forEach((action, index) => {
-          scores[index] += utility(view, rollout(applyAction(state, action), rng))
+          scores[index] += utility(view, rollout(applyAction(state, action), rng), target)
         })
       }
       return legal[scores.indexOf(Math.max(...scores))]

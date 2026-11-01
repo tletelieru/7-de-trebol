@@ -60,6 +60,60 @@ describe('owner matrix', () => {
   })
 })
 
+describe('team bots', () => {
+  function teamView(hand: Card[], current: TrickView['current']): TrickView {
+    const others = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11] as const
+    return {
+      ...lateView(),
+      id: 'todo',
+      players: 4,
+      seat: 1,
+      hand: [...hand, ...others.map((rank) => card('spades', rank))],
+      turn: 1,
+      handCounts: [12, 13, 13, 13],
+      tricks: [],
+      current,
+    }
+  }
+
+  it('never feeds valuable cards to the target', () => {
+    const hand = [card('clubs', 7), card('clubs', 4), card('clubs', 13)]
+    const toTarget = teamView(hand, [{ seat: 0, card: card('clubs', 14) }])
+    const legal = hand.map((item) => ({ type: 'play' as const, seat: 1, card: item }))
+    const picks = (view: TrickView) =>
+      Array.from({ length: 12 }, (_, seed) =>
+        createHardBot({ iterations: 6, target: 0 }).choose(view, legal, createRng(seed + 1)),
+      ).filter((action) => action.type === 'play' && action.card.rank === 7).length
+    expect(picks(toTarget)).toBe(0)
+  })
+})
+
+describe('team bots with allies', () => {
+  it('keeps a queen it can still win instead of passing it to an ally', () => {
+    const others = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11] as const
+    const hand = [card('clubs', 12), card('clubs', 3), card('clubs', 4)]
+    const view: TrickView = {
+      ...lateView(),
+      id: 'todo',
+      players: 4,
+      seat: 1,
+      turn: 1,
+      hand: [...hand, ...others.map((rank) => card('spades', rank))],
+      handCounts: [12, 13, 13, 12],
+      tricks: [],
+      current: [
+        { seat: 3, card: card('clubs', 14) },
+        { seat: 0, card: card('clubs', 2) },
+      ],
+    }
+    const legal = hand.map((item) => ({ type: 'play' as const, seat: 1, card: item }))
+    for (let seed = 1; seed <= 12; seed++) {
+      const action = createHardBot({ iterations: 3, target: 0 }).choose(view, legal, createRng(seed))
+      expect(action.type === 'play' && action.card.rank).not.toBe(12)
+    }
+  })
+})
+
 describe('hardBot', () => {
   it('keeps the 7 of clubs in Todo instead of feeding it to a higher card', () => {
     const others = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11] as const
@@ -84,13 +138,13 @@ describe('hardBot', () => {
     }
     const legal = hand.slice(0, 3).map((item) => ({ type: 'play' as const, seat: 0, card: item }))
     for (let seed = 1; seed <= 20; seed++) {
-      const action = createHardBot(3).choose(view, legal, createRng(seed))
+      const action = createHardBot({ iterations: 3 }).choose(view, legal, createRng(seed))
       expect(action.type === 'play' && action.card).not.toEqual(card('clubs', 7))
     }
   })
 
   it.each([3, 4] as const)('plays only legal moves with %i players', (players) => {
-    const bot = createHardBot(2)
+    const bot = createHardBot({ iterations: 2 })
     const rng = createRng(4)
     let state: MatchState = createMatch({ players }, 4)
     while (state.status !== 'matchOver') {
