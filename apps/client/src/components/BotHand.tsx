@@ -1,7 +1,7 @@
 const CARD_LONG = 1.875
 const CARD_SHORT = 1.25
 const MAX_SPACING = 0.75
-const LINE_REM = { horizontal: 18, vertical: 10 }
+const LINE_REM = { horizontal: 18, vertical: 9 }
 
 interface Props {
   cards: number
@@ -17,7 +17,7 @@ export function BotHand({ cards, active, vertical = false }: Props) {
   return (
     <div
       aria-hidden="true"
-      className={`fan-in flex shrink-0 items-center justify-center ${vertical ? 'h-40' : 'h-8'}`}
+      className={`fan-in flex shrink-0 items-center justify-center ${vertical ? 'h-36' : 'h-8'}`}
     >
       <div
         className={`flex items-center justify-center ${vertical ? 'flex-col' : ''} ${

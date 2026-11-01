@@ -17,7 +17,7 @@ export function PlayerBadge({ name, cards, tricks, points, dealer, active, passe
   return (
     <div
       aria-current={active ? 'true' : undefined}
-      className={`relative flex w-28 flex-col items-center whitespace-nowrap pixel-box border-2 bg-surface px-1 py-1 text-xs ${
+      className={`relative flex w-28 flex-col items-center whitespace-nowrap pixel-box border-2 bg-surface px-1 py-0.5 text-xs leading-tight ${
         active ? 'turn-glow border-gold' : 'border-transparent'
       }`}
     >
@@ -37,7 +37,7 @@ export function PlayerBadge({ name, cards, tricks, points, dealer, active, passe
         </span>
       </span>
       {passed && (
-        <span className="pass-pop absolute -bottom-2 pixel-box bg-raised px-1.5 font-medium text-gold">
+        <span className="pass-pop absolute inset-x-1 bottom-0.5 bg-raised text-center font-medium text-gold">
           {t.passed}
         </span>
       )}

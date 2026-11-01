@@ -11,6 +11,7 @@ describe('App', () => {
 
   it('switches language', async () => {
     render(<App />)
+    await userEvent.click(screen.getByRole('button', { name: /settings|ajustes/i }))
     await userEvent.click(screen.getByRole('button', { name: 'ES' }))
     expect(screen.getByText('Los seis juegos')).toBeTruthy()
     await userEvent.click(screen.getByRole('button', { name: 'EN' }))
@@ -19,6 +20,7 @@ describe('App', () => {
 
   it('toggles dark mode', async () => {
     render(<App />)
+    await userEvent.click(screen.getByRole('button', { name: /settings|ajustes/i }))
     await userEvent.click(screen.getByRole('button', { name: /dark mode|modo oscuro/i }))
     expect(document.documentElement.classList.contains('dark')).toBe(true)
   })
@@ -40,8 +42,8 @@ describe('App', () => {
   })
 
   it('shows the rules from the start screen and from settings', async () => {
+    localStorage.setItem('preferred-lang', 'en')
     render(<App />)
-    await userEvent.click(screen.getByRole('button', { name: 'EN' }))
     await userEvent.click(screen.getByRole('button', { name: 'Rules' }))
     expect(screen.getByRole('dialog', { name: 'Rules' })).toBeTruthy()
     await userEvent.click(screen.getByRole('button', { name: 'Games' }))
@@ -53,15 +55,15 @@ describe('App', () => {
     expect(screen.getByRole('dialog', { name: 'Rules' })).toBeTruthy()
   })
 
+  it('keeps only the logo, install and settings in the header', () => {
+    render(<App />)
+    expect(screen.queryByRole('button', { name: 'EN' })).toBeNull()
+    expect(screen.queryByRole('button', { name: /music|música/i })).toBeNull()
+  })
+
   it('mutes the music from settings', async () => {
     render(<App />)
     await userEvent.click(screen.getByRole('button', { name: /settings|ajustes/i }))
-    await userEvent.click(screen.getByRole('checkbox', { name: /music|música/i }))
-    expect(localStorage.getItem('music')).toBe('off')
-  })
-
-  it('mutes the music from the header', async () => {
-    render(<App />)
     await userEvent.click(screen.getByRole('button', { name: /turn music off|apagar música/i }))
     expect(localStorage.getItem('music')).toBe('off')
     expect(screen.getByRole('button', { name: /turn music on|encender música/i })).toBeTruthy()
