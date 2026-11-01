@@ -44,7 +44,9 @@ export function Home({ level, onLevel, onRules, onHistory, onStart }: Props) {
         <p className="text-muted">{t.tagline}</p>
       </div>
       <div role="group" aria-label={t.difficulty} className="flex w-full flex-col gap-1">
-        <span className="text-center text-sm text-muted">{t.difficulty}</span>
+        <span className="text-center text-sm text-muted">
+          {t.difficulty}: {t.levelHints[level]}
+        </span>
         <div className="grid grid-cols-3 gap-1 pixel-box bg-surface p-1">
           {LEVELS.map((option) => (
             <button

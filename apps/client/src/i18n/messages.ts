@@ -21,6 +21,7 @@ export interface Messages {
   gameHints: Record<GameId, string>
   difficulty: string
   levels: Record<Level, string>
+  levelHints: Record<Level, string>
   playWith: (players: number) => string
   you: string
   bot: (n: number) => string
@@ -104,6 +105,11 @@ export const messages: Record<Locale, Messages> = {
     },
     difficulty: 'Difficulty',
     levels: { easy: 'Easy', medium: 'Medium', hard: 'Hard' },
+    levelHints: {
+      easy: 'sensible bots',
+      medium: 'bots that think ahead',
+      hard: 'bots team up on you',
+    },
     playWith: (players) => `${players} players`,
     you: 'You',
     bot: (n) => `Bot ${n}`,
@@ -185,6 +191,11 @@ export const messages: Record<Locale, Messages> = {
     },
     difficulty: 'Dificultad',
     levels: { easy: 'Fácil', medium: 'Medio', hard: 'Difícil' },
+    levelHints: {
+      easy: 'bots con criterio',
+      medium: 'bots que piensan a futuro',
+      hard: 'los bots se alían contra ti',
+    },
     playWith: (players) => `${players} jugadores`,
     you: 'Tú',
     bot: (n) => `Bot ${n}`,

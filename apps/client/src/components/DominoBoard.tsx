@@ -63,6 +63,7 @@ export function DominoBoard({ board, players, last }: Props) {
                   >
                     {exists ? rankLabel(rank) : ''}
                   </span>
+                  {complete && index === CENTER && <span className="row-back back-pattern" />}
                 </span>
               )
             })}

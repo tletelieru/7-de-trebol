@@ -34,8 +34,8 @@ With 3 players the 2 of diamonds is removed. The full rules are inside the game.
 
 ## What you get
 
-- **Three difficulties:** Easy makes mistakes, Medium plays sound heuristics and Hard simulates the
-  rest of each game before it moves
+- **Three difficulties:** Easy plays sound heuristics, Medium simulates the rest of each game before
+  it moves, and Hard teams the bots up against you. No bot ever sees your cards
 - **3 or 4 players:** you against 2 or 3 bots
 - **Your hand, your way:** drag cards to sort them, or flip between high to low and low to high
 - **Match history:** finished and abandoned matches, with the score of every game
@@ -56,10 +56,8 @@ Each row is one bot against a table of the other, with the seat rotating every m
 
 | Bot | Against | Players | Matches | Wins | Even odds |
 | --- | --- | --- | --- | --- | --- |
-| Hard | Medium | 4 | 300 | 58.0% ±5.6 | 25% |
-| Hard | Medium | 3 | 120 | 72.5% ±8.0 | 33.3% |
-| Medium | Easy | 4 | 10,000 | 38.6% ±1.0 | 25% |
-| Medium | Easy | 3 | 10,000 | 53.7% ±1.0 | 33.3% |
+| Medium | Easy | 4 | 300 | 58.0% ±5.6 | 25% |
+| Medium | Easy | 3 | 120 | 72.5% ±8.0 | 33.3% |
 
 ## Run it locally
 
@@ -91,7 +89,7 @@ The engine is pure and serializable, so saved matches, the bots and a future onl
 it. Bots only receive what their seat can see, so they can't peek at your hand. Thousands of random
 matches check that cards are never lost and that every game adds up to its fixed total.
 
-The Hard bot tracks which rival can hold each card, deals out possible hands, plays each option to the
+The thinking bots track which rival can hold each card, deals out possible hands, plays each option to the
 end of the game and picks the one that does best against the leader. It runs in a Web Worker, so the
 table never freezes.
 
