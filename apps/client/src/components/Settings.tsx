@@ -1,11 +1,18 @@
 import { SUITS } from '@trebol/engine'
-import { useMessages } from '../i18n/messages'
+import { locales } from '../i18n/locales'
+import type { Locale } from '../i18n/locales'
+import { useLocale, useMessages } from '../i18n/messages'
 import { SUIT_ON_CARD, SUIT_SYMBOL } from '../lib/cards'
 import { textSizes } from '../lib/textSize'
 import type { TextSize } from '../lib/textSize'
+import type { ColorMode } from '../lib/theme'
+import { MoonIcon, MusicIcon, MusicOffIcon, SunIcon } from './icons'
 import { Overlay } from './Overlay'
 
 interface Props {
+  mode: ColorMode
+  onToggleMode: () => void
+  onLocale: (locale: Locale) => void
   fourColors: boolean
   onFourColors: (next: boolean) => void
   textSize: TextSize
@@ -22,6 +29,8 @@ interface Props {
   onClose: () => void
 }
 
+const iconButton = 'flex size-10 shrink-0 items-center justify-center pixel-box bg-raised'
+
 const SAMPLE: Record<TextSize, string> = {
   normal: 'text-sm',
   large: 'text-lg',
@@ -29,6 +38,9 @@ const SAMPLE: Record<TextSize, string> = {
 }
 
 export function Settings({
+  mode,
+  onToggleMode,
+  onLocale,
   fourColors,
   onFourColors,
   textSize,
@@ -45,9 +57,48 @@ export function Settings({
   onClose,
 }: Props) {
   const t = useMessages()
+  const locale = useLocale()
+  const modeLabel = mode === 'dark' ? t.toLight : t.toDark
+  const musicLabel = musicOn ? t.musicOff : t.musicOnLabel
 
   return (
     <Overlay title={t.settings} onClose={onClose}>
+      <div className="flex items-center justify-center gap-2">
+        <div role="group" aria-label={t.language} className="flex pixel-box bg-raised p-0.5">
+          {locales.map((option) => (
+            <button
+              key={option}
+              type="button"
+              aria-pressed={locale === option}
+              onClick={() => onLocale(option)}
+              className={`pixel-box px-3 py-1.5 text-sm ${
+                locale === option ? 'bg-accent text-on-accent' : 'text-muted'
+              }`}
+            >
+              {option.toUpperCase()}
+            </button>
+          ))}
+        </div>
+        <button
+          type="button"
+          aria-label={musicLabel}
+          aria-pressed={musicOn}
+          title={musicLabel}
+          onClick={() => onMusic(!musicOn)}
+          className={iconButton}
+        >
+          {musicOn ? <MusicIcon /> : <MusicOffIcon />}
+        </button>
+        <button
+          type="button"
+          aria-label={modeLabel}
+          title={modeLabel}
+          onClick={onToggleMode}
+          className={iconButton}
+        >
+          {mode === 'dark' ? <SunIcon /> : <MoonIcon />}
+        </button>
+      </div>
       <div role="group" aria-label={t.textSize} className="flex flex-col gap-1.5">
         <span className="text-sm font-medium">{t.textSize}</span>
         <div className="grid grid-cols-3 gap-1.5">
@@ -69,18 +120,6 @@ export function Settings({
           ))}
         </div>
       </div>
-      <label className="flex items-center gap-3">
-        <input
-          type="checkbox"
-          checked={musicOn}
-          onChange={(event) => onMusic(event.target.checked)}
-          className="pixel-check"
-        />
-        <span className="min-w-0 flex-1">
-          <span className="block text-sm font-medium">{t.music}</span>
-          <span className="block text-xs text-muted">{t.musicHint}</span>
-        </span>
-      </label>
       <label className="flex items-center gap-3">
         <input
           type="checkbox"

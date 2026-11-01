@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useState } from 'react'
 import type { Level } from '@trebol/bots'
 import type { MatchState, PlayerCount } from '@trebol/engine'
 import { useInstall } from './useInstall'
@@ -21,6 +21,7 @@ import {
 } from './lib/settings'
 import { createMusic } from './lib/music'
 import { readSavedMatch } from './lib/savedMatch'
+import { SoundContext } from './lib/sound'
 import { pickTextSize, textSizeKey, textSizeScale } from './lib/textSize'
 import type { TextSize } from './lib/textSize'
 import { colorModeKey, pickColorMode, prefersDark } from './lib/theme'
@@ -70,7 +71,7 @@ export default function App() {
     pickTextSize(localStorage.getItem(textSizeKey)),
   )
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.documentElement.lang = locale
     document.documentElement.classList.toggle('dark', mode === 'dark')
     document.documentElement.classList.toggle('four-colors', fourColors)
@@ -103,31 +104,29 @@ export default function App() {
 
   return (
     <LocaleContext value={locale}>
+      <SoundContext value={musicOn ? music : null}>
       <div
         className={`mx-auto flex max-w-lg flex-col gap-3 p-4 ${
           session ? 'h-dvh overflow-hidden' : 'min-h-dvh'
         }`}
       >
         <Header
-          mode={mode}
-          onLocale={(next) => {
-            localStorage.setItem(preferredLocaleKey, next)
-            setLocale(next)
-          }}
-          onToggleMode={() => {
-            const next = mode === 'dark' ? 'light' : 'dark'
-            localStorage.setItem(colorModeKey, next)
-            setMode(next)
-          }}
           onInstall={install}
           settingsOpen={settingsOpen}
           onSettings={() => setSettingsOpen(true)}
-          compact={textSize !== 'normal'}
-          musicOn={musicOn}
-          onMusic={changeMusic}
         />
         {settingsOpen && (
           <Settings
+            mode={mode}
+            onToggleMode={() => {
+              const next = mode === 'dark' ? 'light' : 'dark'
+              localStorage.setItem(colorModeKey, next)
+              setMode(next)
+            }}
+            onLocale={(next) => {
+              localStorage.setItem(preferredLocaleKey, next)
+              setLocale(next)
+            }}
             fourColors={fourColors}
             onFourColors={(next) => {
               localStorage.setItem(fourColorsKey, next ? 'on' : 'off')
@@ -190,6 +189,7 @@ export default function App() {
           </>
         )}
       </div>
+      </SoundContext>
     </LocaleContext>
   )
 }
