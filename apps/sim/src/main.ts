@@ -27,7 +27,7 @@ const CATALOG: Record<string, Bot> = {
   random: randomBot,
   easy: easyBot,
   medium: mediumBot,
-  hard: createHardBot(Number(values.iterations)),
+  hard: createHardBot({ iterations: Number(values.iterations) }),
 }
 
 const matches = Number(values.matches)
@@ -35,8 +35,11 @@ const players = Number(values.players) as PlayerCount
 const firstSeed = Number(values.seed)
 const hero = CATALOG[values.hero]
 const field = CATALOG[values.field]
+const teams = [0, 1, 2, 3].map((target) =>
+  createHardBot({ iterations: Number(values.iterations), target }),
+)
 
-if (!Number.isInteger(matches) || matches < 1 || (players !== 3 && players !== 4) || !hero || !field) {
+if (!Number.isInteger(matches) || matches < 1 || (players !== 3 && players !== 4) || !hero || (!field && values.field !== 'team')) {
   console.error('Usage: pnpm sim --matches <n> --players <3|4> --hero <bot> --field <bot>')
   process.exit(1)
 }
@@ -50,7 +53,12 @@ function playMatch(seed: number, heroSeat: number): MatchState {
       continue
     }
     const seat = state.game.turn
-    const bot = seat === heroSeat ? hero : field
+    const bot =
+      seat === heroSeat
+        ? hero
+        : values.field === 'team'
+          ? teams[heroSeat]
+          : field
     state = applyAction(state, bot.choose(viewFor(state, seat), legalActions(state, seat), rng))
   }
   return state

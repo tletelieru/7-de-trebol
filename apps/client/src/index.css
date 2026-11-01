@@ -358,6 +358,12 @@ button.pixel-box[class*='bg-']:active,
   animation: row-glow 500ms 1250ms ease-out both;
 }
 
+.row-back {
+  position: absolute;
+  inset: 0;
+  animation: row-back 320ms 1250ms ease-out both;
+}
+
 .confetti {
   animation: confetti-fall var(--fall) var(--delay) linear both;
 }
@@ -490,6 +496,13 @@ button.pixel-box[class*='bg-']:active,
   }
 }
 
+@keyframes row-back {
+  from {
+    opacity: 0;
+    transform: rotateY(90deg) scale(1.3);
+  }
+}
+
 @keyframes row-glow {
   50% {
     transform: scale(1.5);
@@ -594,6 +607,15 @@ button.pixel-box[class*='bg-']:active,
   from {
     transform: scale(0.9) translateY(12px);
   }
+}
+
+.reduce-motion .row-collect:not(:nth-child(8)) {
+  animation: none;
+  opacity: 0;
+}
+
+.reduce-motion :is(.row-collect, .row-back) {
+  animation: none;
 }
 
 .reduce-motion :is(.playing-card, .hand-card) {
