@@ -1,26 +1,84 @@
-const BEAT_SECONDS = 60 / 96
-const STEP_SECONDS = BEAT_SECONDS / 2
 const LOOKAHEAD_SECONDS = 0.3
 const TICK_MS = 100
 const MASTER_VOLUME = 0.5
+const STEPS_PER_CHORD = 16
 
 const REST = 0
 
-const MELODY = [
-  69, REST, 72, REST, 76, 74, 72, REST, 71, REST, 69, REST, 67, REST, REST, REST,
-  65, REST, 69, REST, 72, 71, 69, REST, 67, REST, 65, REST, 64, REST, REST, REST,
-  60, REST, 64, REST, 67, 69, 67, REST, 64, REST, 67, REST, 72, REST, REST, REST,
-  71, REST, 67, REST, 74, 72, 71, REST, 69, REST, 71, REST, 69, REST, REST, REST,
-]
+export type TrackId = 'intro' | 'positive' | 'negative' | 'domino'
 
-const CHORDS = [
-  [45, 57, 60, 64],
-  [41, 53, 57, 60],
-  [36, 55, 60, 64],
-  [43, 55, 59, 62],
-]
+export interface Track {
+  bpm: number
+  melody: number[]
+  chords: number[][]
+}
 
-const STEPS_PER_CHORD = 16
+export const TRACKS: Record<TrackId, Track> = {
+  intro: {
+    bpm: 96,
+    melody: [
+      69, REST, 72, REST, 76, 74, 72, REST, 71, REST, 69, REST, 67, REST, REST, REST,
+      65, REST, 69, REST, 72, 71, 69, REST, 67, REST, 65, REST, 64, REST, REST, REST,
+      60, REST, 64, REST, 67, 69, 67, REST, 64, REST, 67, REST, 72, REST, REST, REST,
+      71, REST, 67, REST, 74, 72, 71, REST, 69, REST, 71, REST, 69, REST, REST, REST,
+    ],
+    chords: [
+      [45, 57, 60, 64],
+      [41, 53, 57, 60],
+      [36, 55, 60, 64],
+      [43, 55, 59, 62],
+    ],
+  },
+  positive: {
+    bpm: 104,
+    melody: [
+      72, REST, 76, REST, 79, 77, 76, REST, 74, REST, 72, REST, 74, REST, REST, REST,
+      67, REST, 71, REST, 74, 72, 71, REST, 74, REST, 76, REST, 74, REST, REST, REST,
+      69, REST, 72, REST, 76, 74, 72, REST, 71, REST, 72, REST, 69, REST, REST, REST,
+      65, REST, 69, REST, 72, 74, 76, REST, 77, REST, 76, REST, 74, REST, REST, REST,
+    ],
+    chords: [
+      [36, 55, 60, 64],
+      [43, 55, 59, 62],
+      [45, 57, 60, 64],
+      [41, 53, 57, 60],
+    ],
+  },
+  domino: {
+    bpm: 100,
+    melody: [
+      76, REST, 76, REST, 77, REST, 76, REST, 72, REST, 76, REST, 77, REST, REST, REST,
+      77, REST, 77, REST, 79, REST, 77, REST, 74, REST, 77, REST, 79, REST, REST, REST,
+      76, REST, 76, REST, 77, REST, 76, REST, 72, REST, 76, REST, 69, REST, REST, REST,
+      71, REST, 71, REST, 74, REST, 76, REST, 80, REST, 76, REST, 74, REST, REST, REST,
+    ],
+    chords: [
+      [45, 57, 60, 64],
+      [46, 58, 62, 65],
+      [45, 57, 60, 64],
+      [40, 52, 56, 59],
+    ],
+  },
+  negative: {
+    bpm: 88,
+    melody: [
+      64, REST, 69, REST, 71, 72, 71, REST, 69, REST, 64, REST, 65, REST, REST, REST,
+      62, REST, 65, REST, 69, 67, 65, REST, 64, REST, 62, REST, 60, REST, REST, REST,
+      65, REST, 69, REST, 72, 71, 69, REST, 65, REST, 69, REST, 67, REST, REST, REST,
+      64, REST, 68, REST, 71, 69, 68, REST, 64, REST, 68, REST, 71, REST, REST, REST,
+    ],
+    chords: [
+      [45, 57, 60, 64],
+      [38, 53, 57, 62],
+      [41, 53, 57, 60],
+      [40, 52, 56, 59],
+    ],
+  },
+}
+
+function stepSeconds(track: Track): number {
+  return 60 / track.bpm / 2
+}
 
 function frequency(midi: number): number {
   return 440 * 2 ** ((midi - 69) / 12)
@@ -46,21 +104,50 @@ function playTone(
   oscillator.stop(time + length)
 }
 
-function scheduleStep(context: AudioContext, output: AudioNode, step: number, time: number): void {
-  const note = MELODY[step % MELODY.length]
-  if (note !== REST) playTone(context, output, note, time, STEP_SECONDS * 1.8, 'square', 0.035)
-  const position = step % (STEPS_PER_CHORD * CHORDS.length)
-  const chord = CHORDS[Math.floor(position / STEPS_PER_CHORD)]
+const WIN_NOTES = [72, 76, 79, 84, 79, 84, 88]
+const LOSE_NOTES = [69, 67, 64, 62, 60, 57]
+const WIN_STEP_SECONDS = 0.14
+const LOSE_STEP_SECONDS = 0.34
+const KNOCK_GAP_SECONDS = 0.16
+
+function playKnock(context: AudioContext, output: AudioNode, time: number): void {
+  const oscillator = context.createOscillator()
+  const gain = context.createGain()
+  oscillator.type = 'triangle'
+  oscillator.frequency.setValueAtTime(190, time)
+  oscillator.frequency.exponentialRampToValueAtTime(60, time + 0.08)
+  gain.gain.setValueAtTime(0.9, time)
+  gain.gain.exponentialRampToValueAtTime(0.001, time + 0.11)
+  oscillator.connect(gain).connect(output)
+  oscillator.start(time)
+  oscillator.stop(time + 0.12)
+}
+
+function scheduleStep(
+  context: AudioContext,
+  output: AudioNode,
+  track: Track,
+  step: number,
+  time: number,
+): void {
+  const length = stepSeconds(track)
+  const note = track.melody[step % track.melody.length]
+  if (note !== REST) playTone(context, output, note, time, length * 1.8, 'square', 0.035)
+  const position = step % (STEPS_PER_CHORD * track.chords.length)
+  const chord = track.chords[Math.floor(position / STEPS_PER_CHORD)]
   const inChord = position % STEPS_PER_CHORD
-  if (inChord % 8 === 0) playTone(context, output, chord[0], time, BEAT_SECONDS * 1.8, 'triangle', 0.14)
+  if (inChord % 8 === 0) playTone(context, output, chord[0], time, length * 3.6, 'triangle', 0.14)
   if (inChord % 2 === 1) {
-    playTone(context, output, chord[1 + (inChord >> 1) % 3], time, STEP_SECONDS, 'triangle', 0.05)
+    playTone(context, output, chord[1 + (inChord >> 1) % 3], time, length, 'triangle', 0.05)
   }
 }
 
 export interface Music {
   play: () => void
   pause: () => void
+  knock: () => void
+  jingle: (won: boolean) => void
+  setTrack: (id: TrackId) => void
 }
 
 export function createMusic(): Music | null {
@@ -69,14 +156,15 @@ export function createMusic(): Music | null {
   let output: GainNode | null = null
   let timer: ReturnType<typeof setInterval> | null = null
   let step = 0
+  let track = TRACKS.intro
   let nextTime = 0
 
   const tick = () => {
     if (!context || !output) return
     while (nextTime < context.currentTime + LOOKAHEAD_SECONDS) {
-      scheduleStep(context, output, step, nextTime)
+      scheduleStep(context, output, track, step, nextTime)
       step += 1
-      nextTime += STEP_SECONDS
+      nextTime += stepSeconds(track)
     }
   }
 
@@ -96,6 +184,28 @@ export function createMusic(): Music | null {
       if (timer !== null) clearInterval(timer)
       timer = null
       void context?.suspend()
+    },
+    setTrack(id) {
+      if (track === TRACKS[id]) return
+      track = TRACKS[id]
+      step = 0
+    },
+    knock() {
+      if (!context || !output) return
+      const time = context.currentTime
+      playKnock(context, output, time)
+      playKnock(context, output, time + KNOCK_GAP_SECONDS)
+    },
+    jingle(won) {
+      if (!context || !output) return
+      const notes = won ? WIN_NOTES : LOSE_NOTES
+      const length = won ? WIN_STEP_SECONDS : LOSE_STEP_SECONDS
+      const start = context.currentTime + 0.05
+      notes.forEach((note, index) => {
+        const time = start + index * length
+        playTone(context!, output!, note, time, length * 1.6, won ? 'square' : 'triangle', 0.07)
+      })
+      nextTime = start + notes.length * length + 1
     },
   }
 }

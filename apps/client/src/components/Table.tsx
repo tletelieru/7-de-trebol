@@ -1,12 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import type { Level } from '@trebol/bots'
 import { matchTotals, matchWinners, scoreGame } from '@trebol/engine'
 import type { MatchState, PlayerCount, Seat } from '@trebol/engine'
 import { useMessages } from '../i18n/messages'
-import { seatPosition } from '../lib/cards'
+import { SUIT_SYMBOL, rankLabel, seatPosition } from '../lib/cards'
 import { saveRecord } from '../lib/history'
 import { KeyCardContext } from '../lib/keyCards'
 import { clearSavedMatch } from '../lib/savedMatch'
+import { SoundContext, trackForGame } from '../lib/sound'
 import type { SeatPosition } from '../lib/cards'
 import { HUMAN, useMatch } from '../useMatch'
 import { BotHand } from './BotHand'
@@ -16,6 +17,7 @@ import { DominoFlight } from './DominoFlight'
 import { Hand } from './Hand'
 import { Overlay } from './Overlay'
 import { PlayerBadge } from './PlayerBadge'
+import { ResultEffect } from './ResultEffect'
 import { ScoreTable } from './ScoreTable'
 import { TrickArea } from './TrickArea'
 import { TricksPanel } from './TricksPanel'
@@ -70,6 +72,25 @@ export function Table({ players, seed, level, highlight, restored, onExit }: Pro
     seat === HUMAN ? t.you : t.bot(seat),
   )
   const live = scoreGame(state)
+  const sound = useContext(SoundContext)
+  const lastMove = game.kind === 'domino' ? game.moves.at(-1) : undefined
+  const passes = lastMove && lastMove.card === null
+  const moveCount = game.kind === 'domino' ? game.moves.length : 0
+  const matchEnded = state.status === 'matchOver' && !holding
+  const humanWon = matchWinners(state).includes(HUMAN)
+
+  useEffect(() => {
+    sound?.setTrack(trackForGame(game.id))
+    return () => sound?.setTrack('intro')
+  }, [game.id, sound])
+
+  useEffect(() => {
+    if (passes) sound?.knock()
+  }, [passes, moveCount, sound])
+
+  useEffect(() => {
+    if (matchEnded) sound?.jingle(humanWon)
+  }, [matchEnded, humanWon, sound])
   const tallies = live.tallies
   const lastTrick = game.kind === 'tricks' ? game.tricks.at(-1) : undefined
   const shownPlays =
@@ -125,7 +146,7 @@ export function Table({ players, seed, level, highlight, restored, onExit }: Pro
 
   return (
     <KeyCardContext value={highlight ? game.id : null}>
-    <main className="flex min-h-0 flex-1 flex-col gap-2 overflow-x-clip overflow-y-auto overscroll-contain">
+    <main className="no-scrollbar flex min-h-0 flex-1 flex-col gap-2 overflow-x-clip overflow-y-auto overscroll-contain">
       <div className="flex items-center gap-2">
         <button
           type="button"
@@ -135,7 +156,7 @@ export function Table({ players, seed, level, highlight, restored, onExit }: Pro
           <span className="font-pixel text-xl leading-none">
             {state.gameIndex + 1}. {t.games[game.id]}
           </span>
-          <span className="block text-xs text-muted">{t.gameHints[game.id]}</span>
+          <span className="block truncate text-xs text-muted">{t.gameHints[game.id]}</span>
         </button>
         <button
           type="button"
@@ -172,10 +193,23 @@ export function Table({ players, seed, level, highlight, restored, onExit }: Pro
             />
           ) : (
             <>
-              <DominoBoard board={game.board} players={players} />
+              <p aria-live="polite" className="h-5 text-center text-sm text-gold">
+                {lastMove &&
+                  (lastMove.card
+                    ? t.movePlayed(
+                        names[lastMove.seat],
+                        `${rankLabel(lastMove.card.rank)} ${SUIT_SYMBOL[lastMove.card.suit]}`,
+                      )
+                    : t.movePassed(names[lastMove.seat]))}
+              </p>
+              <DominoBoard
+                board={game.board}
+                players={players}
+                last={lastMove?.card ?? null}
+              />
               <DominoFlight
                 key={game.moves.length}
-                move={game.moves.at(-1)}
+                move={lastMove}
                 players={players}
               />
             </>
@@ -289,9 +323,15 @@ export function Table({ players, seed, level, highlight, restored, onExit }: Pro
         </Overlay>
       )}
 
+      {matchEnded && <ResultEffect won={humanWon} />}
+
       {ended && state.status === 'matchOver' && (
         <Overlay title={t.matchFinished}>
-          <p className="font-medium text-gold">
+          <p
+            className={`text-center font-pixel text-3xl leading-none text-gold ${
+              humanWon ? 'result-win' : 'result-lose'
+            }`}
+          >
             {winners.length > 1
               ? t.tie(winners.map((seat) => names[seat]).join(', '))
               : t.winner(names[winners[0]], totals[winners[0]])}

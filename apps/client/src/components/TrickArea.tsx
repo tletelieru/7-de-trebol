@@ -28,7 +28,7 @@ export function TrickArea({ plays, players, collectedBy }: Props) {
     : undefined
 
   return (
-    <div className="relative mx-auto h-40 w-full max-w-44">
+    <div className="relative mx-auto h-36 w-full max-w-44">
       {plays.map(({ seat, card }) => {
         const position = seatPosition(seat, players)
         const from = SEAT_VECTOR[position]

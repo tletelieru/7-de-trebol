@@ -18,6 +18,7 @@ function botWorker(): Worker | null {
 }
 
 const BOT_DELAY = 650
+const DOMINO_BOT_DELAY = 1300
 const TRICK_HOLD = 1250
 const DEAL_HOLD = 1500
 
@@ -58,13 +59,14 @@ export function useMatch(
     }
     const seat = state.game.turn
     if (state.status !== 'playing' || seat === HUMAN) return
+    const delay = state.game.kind === 'domino' ? DOMINO_BOT_DELAY : BOT_DELAY
     const view = viewFor(state, seat)
     const actions = legalActions(state, seat)
     const worker = level === 'hard' ? botWorker() : null
     if (!worker) {
       const timer = setTimeout(() => {
         setState(applyAction(state, BOTS[level].choose(view, actions, rng)))
-      }, BOT_DELAY)
+      }, delay)
       return () => clearTimeout(timer)
     }
     const id = (requestId += 1)
@@ -76,7 +78,7 @@ export function useMatch(
     const timer = setTimeout(() => {
       delayed = true
       commit()
-    }, BOT_DELAY)
+    }, delay)
     worker.onmessage = (event: MessageEvent<BotReply>) => {
       if (event.data.id !== id) return
       reply = event.data.action

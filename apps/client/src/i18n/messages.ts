@@ -14,8 +14,6 @@ export interface Messages {
   historySummary: (played: number, won: number) => string
   playerCount: (n: number) => string
   outcomes: Record<'won' | 'tied' | 'lost' | 'abandoned', string>
-  music: string
-  musicHint: string
   musicOff: string
   musicOnLabel: string
   rules: string
@@ -48,6 +46,8 @@ export interface Messages {
   cardsLeft: (n: number) => string
   tricksWon: (n: number) => string
   dominoBoard: string
+  movePlayed: (name: string, card: string) => string
+  movePassed: (name: string) => string
   exit: string
   exitTitle: string
   exitBody: string
@@ -83,8 +83,6 @@ export const messages: Record<Locale, Messages> = {
     historySummary: (played, won) => `${played} played · ${won} won`,
     playerCount: (n) => `${n} players`,
     outcomes: { won: 'You won', tied: 'Tie', lost: 'You lost', abandoned: 'Abandoned' },
-    music: 'Music',
-    musicHint: 'Soft background chiptune.',
     musicOff: 'Turn music off',
     musicOnLabel: 'Turn music on',
     rules: 'Rules',
@@ -131,6 +129,8 @@ export const messages: Record<Locale, Messages> = {
     cardsLeft: (n) => `${n} ${n === 1 ? 'card' : 'cards'}`,
     tricksWon: (n) => `${n} ${n === 1 ? 'trick' : 'tricks'}`,
     dominoBoard: 'Domino board',
+    movePlayed: (name, card) => `${name}: ${card}`,
+    movePassed: (name) => `${name}: passed`,
     exit: 'Exit',
     exitTitle: 'Leave this match?',
     exitBody: 'You will lose the match in progress.',
@@ -164,8 +164,6 @@ export const messages: Record<Locale, Messages> = {
     historySummary: (played, won) => `${played} jugadas · ${won} ganadas`,
     playerCount: (n) => `${n} jugadores`,
     outcomes: { won: 'Ganaste', tied: 'Empate', lost: 'Perdiste', abandoned: 'Abandonada' },
-    music: 'Música',
-    musicHint: 'Melodía chiptune suave de fondo.',
     musicOff: 'Apagar música',
     musicOnLabel: 'Encender música',
     rules: 'Reglas',
@@ -212,6 +210,8 @@ export const messages: Record<Locale, Messages> = {
     cardsLeft: (n) => `${n} ${n === 1 ? 'carta' : 'cartas'}`,
     tricksWon: (n) => `${n} ${n === 1 ? 'basa' : 'basas'}`,
     dominoBoard: 'Mesa del dominó',
+    movePlayed: (name, card) => `${name}: ${card}`,
+    movePassed: (name) => `${name}: pasa`,
     exit: 'Salir',
     exitTitle: '¿Seguro que quieres salir?',
     exitBody: 'Se perderá la partida en curso.',
