@@ -61,6 +61,34 @@ describe('owner matrix', () => {
 })
 
 describe('hardBot', () => {
+  it('keeps the 7 of clubs in Todo instead of feeding it to a higher card', () => {
+    const others = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11] as const
+    const hand = [
+      card('clubs', 7),
+      card('clubs', 4),
+      card('clubs', 13),
+      ...others.map((rank) => card('spades', rank)),
+    ]
+    const view: TrickView = {
+      ...lateView(),
+      id: 'todo',
+      players: 4,
+      hand,
+      turn: 0,
+      handCounts: [13, 13, 12, 12],
+      tricks: [],
+      current: [
+        { seat: 2, card: card('clubs', 14) },
+        { seat: 3, card: card('clubs', 2) },
+      ],
+    }
+    const legal = hand.slice(0, 3).map((item) => ({ type: 'play' as const, seat: 0, card: item }))
+    for (let seed = 1; seed <= 20; seed++) {
+      const action = createHardBot(3).choose(view, legal, createRng(seed))
+      expect(action.type === 'play' && action.card).not.toEqual(card('clubs', 7))
+    }
+  })
+
   it.each([3, 4] as const)('plays only legal moves with %i players', (players) => {
     const bot = createHardBot(2)
     const rng = createRng(4)

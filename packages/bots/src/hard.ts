@@ -1,10 +1,11 @@
-import { applyAction, legalActions, scoreGame, viewFor } from '@trebol/engine'
-import type { Action, Card, GameState, MatchState, PlayerView } from '@trebol/engine'
-import { mediumBot } from './medium'
+import { RULES, applyAction, cardPoints, legalActions, scoreGame, viewFor } from '@trebol/engine'
+import type { Action, Card, GameState, MatchState, PlayerView, TrickView } from '@trebol/engine'
+import { countOut, mediumBot, unseenCards } from './medium'
 import { buildOwnerMatrix, dealHidden } from './owners'
 import type { Bot, Rng } from './types'
 
 const DEFAULT_ITERATIONS = 40
+const VALUABLE_POINTS = 50
 
 function buildState(view: PlayerView, hidden: Card[][]): MatchState {
   const hands = hidden.map((hand, seat) => (seat === view.seat ? view.hand : hand))
@@ -58,9 +59,36 @@ function utility(view: PlayerView, gained: number[]): number {
   return totals[view.seat] - (Math.max(...rivals) + mean) / 2
 }
 
+function wouldGiveAway(view: TrickView, card: Card, hidden: Card[]): boolean {
+  const master = countOut(card, hidden, 1) === 0
+  const lead = view.current[0]?.card.suit
+  if (lead === undefined) return !master
+  if (card.suit !== lead) return true
+  const top = Math.max(
+    ...view.current.filter((play) => play.card.suit === lead).map((play) => play.card.rank),
+  )
+  if (card.rank < top) return true
+  return !master && view.current.length < view.players - 1
+}
+
+function keepValuableCards(view: PlayerView, legal: Action[]): Action[] {
+  if (view.kind !== 'tricks') return legal
+  const rule = RULES[view.id]
+  if (rule.sign !== 1) return legal
+  const hidden = unseenCards(view)
+  const kept = legal.filter(
+    (action) =>
+      action.type !== 'play' ||
+      cardPoints(action.card, rule) < VALUABLE_POINTS ||
+      !wouldGiveAway(view, action.card, hidden),
+  )
+  return kept.length > 0 ? kept : legal
+}
+
 export function createHardBot(iterations = DEFAULT_ITERATIONS): Bot {
   return {
-    choose(view: PlayerView, legal: Action[], rng: Rng): Action {
+    choose(view: PlayerView, allowed: Action[], rng: Rng): Action {
+      const legal = keepValuableCards(view, allowed)
       if (legal.length === 1) return legal[0]
       const matrix = buildOwnerMatrix(view)
       const scores = legal.map(() => 0)

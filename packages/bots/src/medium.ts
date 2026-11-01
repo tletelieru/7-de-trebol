@@ -4,7 +4,7 @@ import type { Bot, Rng } from './types'
 
 const NOISE = 0.5
 
-function unseenCards(view: TrickView): Card[] {
+export function unseenCards(view: TrickView): Card[] {
   const seen = [
     ...view.tricks.flatMap((trick) => trick.plays),
     ...view.current,
@@ -16,7 +16,7 @@ function unseenCards(view: TrickView): Card[] {
   )
 }
 
-function countOut(card: Card, hidden: Card[], direction: 1 | -1): number {
+export function countOut(card: Card, hidden: Card[], direction: 1 | -1): number {
   return hidden.filter(
     (item) => item.suit === card.suit && (item.rank - card.rank) * direction > 0,
   ).length
