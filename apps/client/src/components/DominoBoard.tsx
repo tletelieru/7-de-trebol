@@ -20,6 +20,15 @@ function isPlaced(board: Board, suit: Suit, rank: Rank, players: PlayerCount): b
   return position >= row.indexOf(placed.low) && position <= row.indexOf(placed.high)
 }
 
+function cellStyle(suit: Suit, placed: boolean, exists: boolean, isLast: boolean): string {
+  if (placed) {
+    const highlight = isLast ? 'shadow-[inset_0_0_0_2px_var(--gold)]' : ''
+    return `domino-place bg-card ${SUIT_ON_CARD[suit]} ${highlight}`
+  }
+  if (exists) return 'bg-raised text-muted'
+  return ''
+}
+
 function isComplete(board: Board, suit: Suit, players: PlayerCount): boolean {
   const placed = board[suit]
   const row = dominoRow(suit, players)
@@ -51,15 +60,7 @@ export function DominoBoard({ board, players, last }: Props) {
                   <span
                     key={String(placed)}
                     data-placed={placed}
-                    className={`flex flex-1 items-center justify-center font-pixel text-lg leading-none ${
-                      placed
-                        ? `domino-place bg-card ${SUIT_ON_CARD[suit]} ${
-                            isLast ? 'shadow-[inset_0_0_0_2px_var(--gold)]' : ''
-                          }`
-                        : exists
-                          ? 'bg-raised text-muted'
-                          : ''
-                    }`}
+                    className={`flex flex-1 items-center justify-center font-pixel text-lg leading-none ${cellStyle(suit, placed, exists, isLast)}`}
                   >
                     {exists ? rankLabel(rank) : ''}
                   </span>

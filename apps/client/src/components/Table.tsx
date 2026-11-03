@@ -93,8 +93,8 @@ export function Table({ players, seed, level, highlight, restored, onExit }: Pro
   }, [matchEnded, humanWon, sound])
   const tallies = live.tallies
   const lastTrick = game.kind === 'tricks' ? game.tricks.at(-1) : undefined
-  const shownPlays =
-    game.kind === 'tricks' ? (holding && lastTrick ? lastTrick.plays : game.current) : []
+  let shownPlays = game.kind === 'tricks' ? game.current : []
+  if (holding && lastTrick) shownPlays = lastTrick.plays
   const ended = state.status !== 'playing' && !holding
 
   const badge = (seat: Seat) => (
