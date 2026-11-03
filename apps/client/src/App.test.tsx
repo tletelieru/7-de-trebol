@@ -55,7 +55,21 @@ describe('App', () => {
     expect(screen.getByRole('dialog', { name: 'Rules' })).toBeTruthy()
   })
 
-  it('keeps only the logo, install and settings in the header', () => {
+  it('illustrates every rule with an example', async () => {
+    localStorage.setItem('preferred-lang', 'en')
+    render(<App />)
+    await userEvent.click(screen.getByRole('button', { name: 'Rules' }))
+    const dialog = screen.getByRole('dialog', { name: 'Rules' })
+    for (const tab of ['Basics', 'Deal', 'Tricks', 'Games']) {
+      await userEvent.click(within(dialog).getByRole('button', { name: tab }))
+      const rules = dialog.querySelectorAll('li')
+      const examples = dialog.querySelectorAll('li [data-rule-example]')
+      expect(examples).toHaveLength(rules.length)
+    }
+    expect(dialog.querySelectorAll('.card-face').length).toBeGreaterThan(10)
+  })
+
+    it('keeps only the logo, install and settings in the header', () => {
     render(<App />)
     expect(screen.queryByRole('button', { name: 'EN' })).toBeNull()
     expect(screen.queryByRole('button', { name: /music|música/i })).toBeNull()
