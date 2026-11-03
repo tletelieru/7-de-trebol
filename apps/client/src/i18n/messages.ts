@@ -44,6 +44,7 @@ export interface Messages {
   pass: string
   passed: string
   dealer: string
+  dealerIs: (name: string) => string
   cardsLeft: (n: number) => string
   tricksWon: (n: number) => string
   dominoBoard: string
@@ -132,6 +133,7 @@ export const messages: Record<Locale, Messages> = {
     pass: 'Pass',
     passed: 'Passed',
     dealer: 'Dealer',
+    dealerIs: (name) => `Dealer: ${name}`,
     cardsLeft: (n) => `${n} ${n === 1 ? 'card' : 'cards'}`,
     tricksWon: (n) => `${n} ${n === 1 ? 'trick' : 'tricks'}`,
     dominoBoard: 'Domino board',
@@ -218,6 +220,7 @@ export const messages: Record<Locale, Messages> = {
     pass: 'Pasar',
     passed: 'Pasa',
     dealer: 'Repartidor',
+    dealerIs: (name) => `Da: ${name}`,
     cardsLeft: (n) => `${n} ${n === 1 ? 'carta' : 'cartas'}`,
     tricksWon: (n) => `${n} ${n === 1 ? 'basa' : 'basas'}`,
     dominoBoard: 'Mesa del dominó',

@@ -60,7 +60,8 @@ function recentlyPassed(state: MatchState, seat: Seat): boolean {
 
 export function Table({ players, seed, level, highlight, restored, onExit }: Props) {
   const t = useMessages()
-  const { state, holding, dealing, legal, play, pass, next } = useMatch(players, seed, level, restored)
+  const { state, holding, drawing, spotlight, drawnDealer, dealing, legal, play, pass, next } =
+    useMatch(players, seed, level, restored)
   const [scoresOpen, setScoresOpen] = useState(false)
   const [tricksOpen, setTricksOpen] = useState(false)
   const [exitOpen, setExitOpen] = useState(false)
@@ -81,6 +82,11 @@ export function Table({ players, seed, level, highlight, restored, onExit }: Pro
   if (holding && lastTrick) shownPlays = lastTrick.plays
   const ended = state.status !== 'playing' && !holding
 
+  const spotlightFor = (seat: Seat) => {
+    if (spotlight !== seat) return null
+    return drawnDealer === null ? 'hop' : 'stop'
+  }
+
   const badge = (seat: Seat) => (
     <PlayerBadge
       name={names[seat]}
@@ -90,6 +96,7 @@ export function Table({ players, seed, level, highlight, restored, onExit }: Pro
       dealer={state.dealer === seat}
       active={state.status === 'playing' && !holding && game.turn === seat}
       passed={recentlyPassed(state, seat)}
+      spotlight={spotlightFor(seat)}
     />
   )
 
@@ -100,8 +107,9 @@ export function Table({ players, seed, level, highlight, restored, onExit }: Pro
 
   const line = (seat: Seat, vertical: boolean) => (
     <BotHand
-      key={`${state.gameIndex}-${seat}`}
+      key={`${state.gameIndex}-${seat}-${drawing}`}
       cards={game.hands[seat].length}
+      concealed={drawing}
       active={state.status === 'playing' && !holding && game.turn === seat}
       vertical={vertical}
     />
@@ -209,6 +217,8 @@ export function Table({ players, seed, level, highlight, restored, onExit }: Pro
           legal={legal}
           aceLow={game.kind === 'domino'}
           dealing={dealing}
+          concealed={drawing}
+          notice={drawnDealer === null ? null : t.dealerIs(names[drawnDealer])}
           onPlay={play}
           onPass={pass}
         />
