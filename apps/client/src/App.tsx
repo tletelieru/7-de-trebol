@@ -28,6 +28,7 @@ import type { TextSize } from './lib/textSize'
 import { colorModeKey, pickColorMode, prefersDark } from './lib/theme'
 import type { ColorMode } from './lib/theme'
 import { Footer } from './components/Footer'
+import { OtherGames } from './components/OtherGames'
 import { Header } from './components/Header'
 import { History } from './components/History'
 import { Home } from './components/Home'
@@ -111,7 +112,7 @@ export default function App() {
       <SoundContext value={musicOn ? music : null}>
       <div
         className={`mx-auto flex max-w-lg flex-col gap-3 p-4 ${
-          session ? 'h-dvh overflow-hidden' : 'min-h-dvh'
+          session ? 'h-dvh overflow-hidden' : 'lg:relative min-h-dvh'
         }`}
       >
         <Header
@@ -195,6 +196,7 @@ export default function App() {
                 setSession({ players, seed: Date.now() | 0, level, restored: null })
               }}
             />
+            <OtherGames />
             <Footer />
           </>
         )}

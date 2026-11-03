@@ -99,4 +99,20 @@ describe('App', () => {
     await userEvent.click(screen.getByRole('checkbox', { name: /animations|animaciones/i }))
     expect(document.documentElement.classList.contains('reduce-motion')).toBe(true)
   })
+
+  it('links the other games from the start screen', () => {
+    localStorage.setItem('preferred-lang', 'en')
+    render(<App />)
+    const others = screen.getByRole('complementary', { name: 'Other games' })
+    const links = within(others).getAllByRole('link')
+    expect(links.map((link) => link.getAttribute('href'))).toEqual([
+      'https://tletelieru.github.io/brisca/',
+      'https://tletelieru.github.io/escoba/',
+      'https://tletelieru.github.io/uno/',
+      'https://tletelieru.github.io/tele/',
+      'https://tletelieru.github.io/carioca/',
+    ])
+    expect(within(others).queryByText('7 de Trébol')).toBeNull()
+    expect(within(others).queryByRole('link', { name: /7 de Trébol/ })).toBeNull()
+  })
 })

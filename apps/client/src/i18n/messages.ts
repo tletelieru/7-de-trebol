@@ -73,6 +73,7 @@ export interface Messages {
   language: string
   install: string
   developedBy: string
+  otherGames: string
 }
 
 export const messages: Record<Locale, Messages> = {
@@ -162,6 +163,7 @@ export const messages: Record<Locale, Messages> = {
     language: 'Language',
     install: 'Install app',
     developedBy: 'Developed by',
+    otherGames: 'Other games',
   },
   es: {
     appName: '7 de Trébol',
@@ -249,6 +251,7 @@ export const messages: Record<Locale, Messages> = {
     language: 'Idioma',
     install: 'Instalar app',
     developedBy: 'Desarrollado por',
+    otherGames: 'Otros juegos',
   },
 }
 
