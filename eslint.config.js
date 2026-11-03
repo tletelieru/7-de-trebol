@@ -3,13 +3,14 @@ import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
-import noRepeatedSiblings from './eslint/no-repeated-siblings.js'
+import local from './eslint/local.js'
 
 export default tseslint.config(
   { ignores: ['**/dist', '**/dev-dist'] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],
+    linterOptions: { reportUnusedDisableDirectives: 'error' },
     languageOptions: {
       ecmaVersion: 2023,
       globals: globals.browser,
@@ -17,13 +18,15 @@ export default tseslint.config(
     plugins: {
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
-      local: { rules: { 'no-repeated-siblings': noRepeatedSiblings } },
+      local,
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
       'no-nested-ternary': 'error',
       'local/no-repeated-siblings': 'error',
+      'local/no-effect': 'error',
+      'local/effect-reason': 'error',
     },
   },
 )

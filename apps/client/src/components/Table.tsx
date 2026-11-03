@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { Level } from '@trebol/bots'
 import { matchTotals, matchWinners, scoreGame } from '@trebol/engine'
 import type { MatchState, PlayerCount, Seat } from '@trebol/engine'
@@ -7,7 +7,6 @@ import { SUIT_SYMBOL, rankLabel, seatPosition } from '../lib/cards'
 import { saveRecord } from '../lib/history'
 import { KeyCardContext } from '../lib/keyCards'
 import { clearSavedMatch } from '../lib/savedMatch'
-import { SoundContext, trackForGame } from '../lib/sound'
 import type { SeatPosition } from '../lib/cards'
 import { HUMAN, useMatch } from '../useMatch'
 import { BotHand } from './BotHand'
@@ -72,15 +71,10 @@ export function Table({ players, seed, level, highlight, restored, onExit }: Pro
     seat === HUMAN ? t.you : t.bot(seat),
   )
   const live = scoreGame(state)
-  const sound = useContext(SoundContext)
   const lastMove = game.kind === 'domino' ? game.moves.at(-1) : undefined
   const matchEnded = state.status === 'matchOver' && !holding
   const humanWon = matchWinners(state).includes(HUMAN)
 
-  useEffect(() => {
-    sound?.setTrack(trackForGame(game.id))
-    return () => sound?.setTrack('intro')
-  }, [game.id, sound])
   const tallies = live.tallies
   const lastTrick = game.kind === 'tricks' ? game.tricks.at(-1) : undefined
   let shownPlays = game.kind === 'tricks' ? game.current : []

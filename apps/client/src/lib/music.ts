@@ -150,13 +150,13 @@ export interface Music {
   setTrack: (id: TrackId) => void
 }
 
-export function createMusic(): Music | null {
+export function createMusic(initial: TrackId = 'intro'): Music | null {
   if (typeof AudioContext === 'undefined') return null
   let context: AudioContext | null = null
   let output: GainNode | null = null
   let timer: ReturnType<typeof setInterval> | null = null
   let step = 0
-  let track = TRACKS.intro
+  let track = TRACKS[initial]
   let nextTime = 0
 
   const tick = () => {
