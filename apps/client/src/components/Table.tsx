@@ -74,8 +74,6 @@ export function Table({ players, seed, level, highlight, restored, onExit }: Pro
   const live = scoreGame(state)
   const sound = useContext(SoundContext)
   const lastMove = game.kind === 'domino' ? game.moves.at(-1) : undefined
-  const passes = lastMove && lastMove.card === null
-  const moveCount = game.kind === 'domino' ? game.moves.length : 0
   const matchEnded = state.status === 'matchOver' && !holding
   const humanWon = matchWinners(state).includes(HUMAN)
 
@@ -83,14 +81,6 @@ export function Table({ players, seed, level, highlight, restored, onExit }: Pro
     sound?.setTrack(trackForGame(game.id))
     return () => sound?.setTrack('intro')
   }, [game.id, sound])
-
-  useEffect(() => {
-    if (passes) sound?.knock()
-  }, [passes, moveCount, sound])
-
-  useEffect(() => {
-    if (matchEnded) sound?.jingle(humanWon)
-  }, [matchEnded, humanWon, sound])
   const tallies = live.tallies
   const lastTrick = game.kind === 'tricks' ? game.tricks.at(-1) : undefined
   let shownPlays = game.kind === 'tricks' ? game.current : []
@@ -108,19 +98,6 @@ export function Table({ players, seed, level, highlight, restored, onExit }: Pro
       passed={recentlyPassed(state, seat)}
     />
   )
-
-  useEffect(() => {
-    if (state.status !== 'matchOver') return
-    saveRecord({
-      id: seed,
-      finishedAt: Date.now(),
-      players,
-      level,
-      results: state.results,
-      totals: matchTotals(state),
-      winners: matchWinners(state),
-    })
-  }, [state, seed, players, level])
 
   const seatAt = (position: SeatPosition) =>
     Array.from({ length: players }, (_, seat) => seat).find(
@@ -158,20 +135,19 @@ export function Table({ players, seed, level, highlight, restored, onExit }: Pro
           </span>
           <span className="block truncate text-xs text-muted">{t.gameHints[game.id]}</span>
         </button>
-        <button
-          type="button"
-          onClick={() => setScoresOpen(true)}
-          className="pixel-button bg-raised px-3 py-1 text-ink"
-        >
-          {t.scoreTitle}
-        </button>
-        <button
-          type="button"
-          onClick={() => setExitOpen(true)}
-          className="pixel-button bg-raised px-3 py-1 text-ink"
-        >
-          {t.exit}
-        </button>
+        {[
+          { label: t.scoreTitle, onClick: () => setScoresOpen(true) },
+          { label: t.exit, onClick: () => setExitOpen(true) },
+        ].map(({ label, onClick }) => (
+          <button
+            key={label}
+            type="button"
+            onClick={onClick}
+            className="pixel-button bg-raised px-3 py-1 text-ink"
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
       <div className="flex justify-between gap-1">
