@@ -44,6 +44,12 @@ if (!Number.isInteger(matches) || matches < 1 || (players !== 3 && players !== 4
   process.exit(1)
 }
 
+function botFor(seat: number, heroSeat: number): Bot {
+  if (seat === heroSeat) return hero
+  if (values.field === 'team') return teams[heroSeat]
+  return field
+}
+
 function playMatch(seed: number, heroSeat: number): MatchState {
   const rng = createRng(seed)
   let state = createMatch({ players }, seed)
@@ -53,12 +59,7 @@ function playMatch(seed: number, heroSeat: number): MatchState {
       continue
     }
     const seat = state.game.turn
-    const bot =
-      seat === heroSeat
-        ? hero
-        : values.field === 'team'
-          ? teams[heroSeat]
-          : field
+    const bot = botFor(seat, heroSeat)
     state = applyAction(state, bot.choose(viewFor(state, seat), legalActions(state, seat), rng))
   }
   return state
