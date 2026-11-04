@@ -74,6 +74,9 @@ export interface Messages {
   install: string
   developedBy: string
   otherGames: string
+  showOtherGames: string
+  hideOtherGames: string
+  showOtherGamesHint: string
 }
 
 export const messages: Record<Locale, Messages> = {
@@ -164,6 +167,9 @@ export const messages: Record<Locale, Messages> = {
     install: 'Install app',
     developedBy: 'Developed by',
     otherGames: 'Other games',
+    showOtherGames: 'Show other games',
+    hideOtherGames: 'Hide other games',
+    showOtherGamesHint: 'Links to the other card games: a side column on wide screens, a header button on narrow ones.',
   },
   es: {
     appName: '7 de Trébol',
@@ -252,6 +258,9 @@ export const messages: Record<Locale, Messages> = {
     install: 'Instalar app',
     developedBy: 'Desarrollado por',
     otherGames: 'Otros juegos',
+    showOtherGames: 'Mostrar otros juegos',
+    hideOtherGames: 'Ocultar otros juegos',
+    showOtherGamesHint: 'Enlaces a los otros juegos de naipes: una columna lateral en pantallas anchas y un botón en la cabecera en las angostas.',
   },
 }
 
