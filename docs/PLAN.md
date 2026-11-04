@@ -68,12 +68,12 @@ Listo cuando: el link de `ox-test` abre el cliente y CI pasa.
 
 ### 1. Motor
 - Mazo (51 cartas con 3 jugadores, sin 2♦), reparto en dos tandas (7+10 / 6+7) y turnos antihorarios.
-- Basas: seguir pinta obligatorio, sin triunfo, salida libre.
-- Los 5 juegos de basas y el dominó, incluida la opción de retener los 7.
+- Bazas: seguir pinta obligatorio, sin triunfo, salida libre.
+- Los 5 juegos de bazas y el dominó, incluida la opción de retener los 7.
 - Puntaje portado desde `cocktail/src/lib/scoring.ts`.
 
 Listo cuando, con tests de propiedades sobre miles de partidas al azar:
-- Cada juego cierra en 13 / 17 basas y ninguna carta se pierde ni se duplica.
+- Cada juego cierra en 13 / 17 bazas y ninguna carta se pierde ni se duplica.
 - Los totales calzan (4 / 3 jugadores): −330/−370, +310/+350, −380/−420, +660/+700, −660/−700.
 - En dominó el As va bajo el 2 y, con 3 jugadores, el A♦ sigue al 3♦.
 - Dominó: siempre termina con un ganador.
@@ -81,7 +81,7 @@ Listo cuando, con tests de propiedades sobre miles de partidas al azar:
 
 ### 2. Jugable de punta a punta
 - Bot fácil: juega como el medio el 65 % de las veces y el resto al azar.
-- Mesa funcional sin arte final: mano, basa en curso, turnos, dominó, tabla de puntaje y resumen por juego.
+- Mesa funcional sin arte final: mano, baza en curso, turnos, dominó, tabla de puntaje y resumen por juego.
 - `apps/sim` corre partidas completas por CLI.
 
 Listo cuando: se juega una partida completa de 6 juegos en el celular por link. Primer corte para probar con la familia.
@@ -96,7 +96,7 @@ Listo cuando: el medio le gana al fácil de forma clara en 10.000 partidas, con 
 ### 4. Experiencia visual
 - Arte propio pixel art de cartas y mesa, referencia Balatro sin copiarlo.
 - Mano en abanico, reordenar arrastrando, tocar dos veces para jugar, cartas no jugables atenuadas.
-- Animaciones de reparto, basa y cierre. Filtro CRT opcional.
+- Animaciones de reparto, baza y cierre. Filtro CRT opcional.
 - Layout mobile first; panel lateral en pantalla ancha.
 
 Listo cuando: pasa revisión con capturas en celular y escritorio.
@@ -131,7 +131,7 @@ Listo cuando: los instaladores corren en cada plataforma objetivo.
 
 ## Reglas confirmadas
 
-1. Orden de cartas en basas: 2 la más baja, As la más alta.
+1. Orden de cartas en bazas: 2 la más baja, As la más alta.
 2. Dominó: el As es la carta más baja. Desde el 7 se baja hasta el As y se sube hasta la K.
 3. Dominó: el juego termina apenas alguien queda sin cartas.
 4. Dominó: quien tiene jugada no puede pasar.
