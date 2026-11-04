@@ -60,10 +60,10 @@ export const rulesText: Record<Locale, RulesText> = {
       {
         tab: 'Básico',
         rules: [
-          'Juego de basas con naipe inglés, para 3 o 4 jugadores.',
-          'Con 4 jugadores son 13 basas. Con 3 se saca el 2 de caro y son 17.',
+          'Juego de bazas con naipe inglés, para 3 o 4 jugadores.',
+          'Con 4 jugadores son 13 bazas. Con 3 se saca el 2 de caro y son 17.',
           'Son 6 juegos, siempre en el mismo orden. Gana el mayor total al final de los seis.',
-          'La última basa cuenta doble: sus 10 de basa normal más los 50 de última.',
+          'La última baza cuenta doble: sus 10 de baza normal más los 50 de última.',
         ],
       },
       {
@@ -76,21 +76,21 @@ export const rulesText: Record<Locale, RulesText> = {
         ],
       },
       {
-        tab: 'Basas',
+        tab: 'Bazas',
         rules: [
           'Es obligatorio seguir pinta. Si no se tiene, se tira cualquier carta.',
           'Gana la carta más alta de la pinta que partió. El 2 es la más baja y el As la más alta.',
-          'No hay triunfo, así que quien no sigue pinta nunca gana la basa.',
+          'No hay triunfo, así que quien no sigue pinta nunca gana la baza.',
           'Quien parte puede tirar cualquier carta, incluso corazones, quinas o el 7 de trébol.',
         ],
       },
     ],
     games: {
-      trebol: 'Cada basa −10. Llevarse el 7 de trébol −150. Última basa −50.',
-      corazones: 'Cada basa +10. Cada corazón +10. Última basa +50.',
-      quinas: 'Cada basa −10. Cada quina −50. Última basa −50.',
-      todo: 'Cada basa +10. Cada corazón +10. Cada quina +50. 7 de trébol +150. Última basa +50.',
-      nada: 'Cada basa −10. Cada corazón −10. Cada quina −50. 7 de trébol −150. Última basa −50.',
+      trebol: 'Cada baza −10. Llevarse el 7 de trébol −150. Última baza −50.',
+      corazones: 'Cada baza +10. Cada corazón +10. Última baza +50.',
+      quinas: 'Cada baza −10. Cada quina −50. Última baza −50.',
+      todo: 'Cada baza +10. Cada corazón +10. Cada quina +50. 7 de trébol +150. Última baza +50.',
+      nada: 'Cada baza −10. Cada corazón −10. Cada quina −50. 7 de trébol −150. Última baza −50.',
       domino:
         'Cada pinta parte con su 7, baja hasta el As y sube hasta la K. Aquí el As es la carta más baja. Con 3 jugadores el As de caro sigue al 3. Solo se puede pasar si no hay jugada. El juego termina cuando alguien se queda sin cartas: +300 para esa persona y −10 por carta para los demás.',
     },
