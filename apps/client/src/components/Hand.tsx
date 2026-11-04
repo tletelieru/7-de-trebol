@@ -74,6 +74,7 @@ export function Hand({ header, hand, legal, aceLow, dealing, onPlay, onPass }: P
     current.element.style.translate = `${x}px ${y}px`
   }, [])
 
+  // eslint-disable-next-line local/no-effect -- reserves the hand height from the measured width and on window resize
   useLayoutEffect(() => {
     const reserve = () => {
       const element = grid.current
@@ -88,6 +89,7 @@ export function Hand({ header, hand, legal, aceLow, dealing, onPlay, onPass }: P
     return () => window.removeEventListener('resize', reserve)
   })
 
+  // eslint-disable-next-line local/no-effect -- animates cards from their previous DOM positions after a reorder (FLIP)
   useLayoutEffect(() => {
     place()
     const buttons = grid.current?.querySelectorAll<HTMLButtonElement>('[data-card]') ?? []

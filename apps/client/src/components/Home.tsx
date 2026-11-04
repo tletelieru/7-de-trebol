@@ -79,20 +79,19 @@ export function Home({ level, onLevel, onRules, onHistory, onStart }: Props) {
         <div className="flex items-center justify-between gap-2">
           <h2 className="font-pixel text-2xl leading-none">{t.gamesTitle}</h2>
           <div className="flex gap-1">
-            <button
-              type="button"
-              onClick={onHistory}
-              className="pixel-box bg-raised px-2 py-1 text-xs font-medium"
-            >
-              {t.history}
-            </button>
-            <button
-              type="button"
-              onClick={onRules}
-              className="pixel-box bg-raised px-2 py-1 text-xs font-medium"
-            >
-              {t.rules}
-            </button>
+            {[
+              { label: t.history, onClick: onHistory },
+              { label: t.rules, onClick: onRules },
+            ].map(({ label, onClick }) => (
+              <button
+                key={label}
+                type="button"
+                onClick={onClick}
+                className="pixel-box bg-raised px-2 py-1 text-xs font-medium"
+              >
+                {label}
+              </button>
+            ))}
           </div>
         </div>
         <ol className="grid auto-rows-fr grid-cols-2 gap-1.5">

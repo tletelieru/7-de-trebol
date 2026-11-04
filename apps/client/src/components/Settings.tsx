@@ -60,6 +60,26 @@ export function Settings({
   const locale = useLocale()
   const modeLabel = mode === 'dark' ? t.toLight : t.toDark
   const musicLabel = musicOn ? t.musicOff : t.musicOnLabel
+  const iconActions = [
+    {
+      label: musicLabel,
+      pressed: musicOn,
+      onClick: () => onMusic(!musicOn),
+      icon: musicOn ? <MusicIcon /> : <MusicOffIcon />,
+    },
+    {
+      label: modeLabel,
+      pressed: undefined,
+      onClick: onToggleMode,
+      icon: mode === 'dark' ? <SunIcon /> : <MoonIcon />,
+    },
+  ]
+  const toggles = [
+    { label: t.highlight, hint: t.highlightHint, checked: highlight, onChange: onHighlight },
+    { label: t.plainFont, hint: t.plainFontHint, checked: plainFont, onChange: onPlainFont },
+    { label: t.reduceMotion, hint: t.reduceMotionHint, checked: reduceMotion, onChange: onReduceMotion },
+    { label: t.fourColors, hint: t.fourColorsHint, checked: fourColors, onChange: onFourColors },
+  ]
 
   return (
     <Overlay title={t.settings} onClose={onClose}>
@@ -79,25 +99,19 @@ export function Settings({
             </button>
           ))}
         </div>
-        <button
-          type="button"
-          aria-label={musicLabel}
-          aria-pressed={musicOn}
-          title={musicLabel}
-          onClick={() => onMusic(!musicOn)}
-          className={iconButton}
-        >
-          {musicOn ? <MusicIcon /> : <MusicOffIcon />}
-        </button>
-        <button
-          type="button"
-          aria-label={modeLabel}
-          title={modeLabel}
-          onClick={onToggleMode}
-          className={iconButton}
-        >
-          {mode === 'dark' ? <SunIcon /> : <MoonIcon />}
-        </button>
+        {iconActions.map(({ label, pressed, onClick, icon }) => (
+          <button
+            key={label}
+            type="button"
+            aria-label={label}
+            aria-pressed={pressed}
+            title={label}
+            onClick={onClick}
+            className={iconButton}
+          >
+            {icon}
+          </button>
+        ))}
       </div>
       <div role="group" aria-label={t.textSize} className="flex flex-col gap-1.5">
         <span className="text-sm font-medium">{t.textSize}</span>
@@ -120,54 +134,20 @@ export function Settings({
           ))}
         </div>
       </div>
-      <label className="flex items-center gap-3">
-        <input
-          type="checkbox"
-          checked={highlight}
-          onChange={(event) => onHighlight(event.target.checked)}
-          className="pixel-check"
-        />
-        <span className="min-w-0 flex-1">
-          <span className="block text-sm font-medium">{t.highlight}</span>
-          <span className="block text-xs text-muted">{t.highlightHint}</span>
-        </span>
-      </label>
-      <label className="flex items-center gap-3">
-        <input
-          type="checkbox"
-          checked={plainFont}
-          onChange={(event) => onPlainFont(event.target.checked)}
-          className="pixel-check"
-        />
-        <span className="min-w-0 flex-1">
-          <span className="block text-sm font-medium">{t.plainFont}</span>
-          <span className="block text-xs text-muted">{t.plainFontHint}</span>
-        </span>
-      </label>
-      <label className="flex items-center gap-3">
-        <input
-          type="checkbox"
-          checked={reduceMotion}
-          onChange={(event) => onReduceMotion(event.target.checked)}
-          className="pixel-check"
-        />
-        <span className="min-w-0 flex-1">
-          <span className="block text-sm font-medium">{t.reduceMotion}</span>
-          <span className="block text-xs text-muted">{t.reduceMotionHint}</span>
-        </span>
-      </label>
-      <label className="flex items-center gap-3">
-        <input
-          type="checkbox"
-          checked={fourColors}
-          onChange={(event) => onFourColors(event.target.checked)}
-          className="pixel-check"
-        />
-        <span className="min-w-0 flex-1">
-          <span className="block text-sm font-medium">{t.fourColors}</span>
-          <span className="block text-xs text-muted">{t.fourColorsHint}</span>
-        </span>
-      </label>
+      {toggles.map(({ label, hint, checked, onChange }) => (
+        <label key={label} className="flex items-center gap-3">
+          <input
+            type="checkbox"
+            checked={checked}
+            onChange={(event) => onChange(event.target.checked)}
+            className="pixel-check"
+          />
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-medium">{label}</span>
+            <span className="block text-xs text-muted">{hint}</span>
+          </span>
+        </label>
+      ))}
       <div aria-hidden="true" className="flex justify-center gap-2">
         {SUITS.map((suit) => (
           <span
@@ -178,12 +158,19 @@ export function Settings({
           </span>
         ))}
       </div>
-      <button type="button" onClick={onRules} className="pixel-box bg-raised py-2 font-medium">
-        {t.rules}
-      </button>
-      <button type="button" onClick={onClose} className="pixel-box bg-raised py-2 font-medium">
-        {t.close}
-      </button>
+      {[
+        { label: t.rules, onClick: onRules },
+        { label: t.close, onClick: onClose },
+      ].map(({ label, onClick }) => (
+        <button
+          key={label}
+          type="button"
+          onClick={onClick}
+          className="pixel-box bg-raised py-2 font-medium"
+        >
+          {label}
+        </button>
+      ))}
     </Overlay>
   )
 }

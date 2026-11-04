@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { TRACKS } from './music'
-import { trackForGame } from './sound'
+import { GAME_TRACKS } from './sound'
 
 describe('music tracks', () => {
   it('keeps the same shape in every track', () => {
@@ -15,11 +15,11 @@ describe('music tracks', () => {
   })
 
   it('picks the track from the sign of the game', () => {
-    expect(trackForGame('trebol')).toBe('negative')
-    expect(trackForGame('quinas')).toBe('negative')
-    expect(trackForGame('nada')).toBe('negative')
-    expect(trackForGame('corazones')).toBe('positive')
-    expect(trackForGame('todo')).toBe('positive')
-    expect(trackForGame('domino')).toBe('domino')
+    expect(GAME_TRACKS.trebol).toBe('negative')
+    expect(GAME_TRACKS.quinas).toBe('negative')
+    expect(GAME_TRACKS.nada).toBe('negative')
+    expect(GAME_TRACKS.corazones).toBe('positive')
+    expect(GAME_TRACKS.todo).toBe('positive')
+    expect(GAME_TRACKS.domino).toBe('domino')
   })
 })
