@@ -7,9 +7,10 @@ interface Props {
   cards: number
   active: boolean
   vertical?: boolean
+  concealed?: boolean
 }
 
-export function BotHand({ cards, active, vertical = false }: Props) {
+export function BotHand({ cards, active, vertical = false, concealed = false }: Props) {
   const room = (vertical ? LINE_REM.vertical : LINE_REM.horizontal) - CARD_SHORT
   const spacing = Math.min(cards > 1 ? room / (cards - 1) : 0, MAX_SPACING)
   const overlap = `${spacing - CARD_SHORT}rem`
@@ -17,7 +18,9 @@ export function BotHand({ cards, active, vertical = false }: Props) {
   return (
     <div
       aria-hidden="true"
-      className={`fan-in flex shrink-0 items-center justify-center ${vertical ? 'h-36' : 'h-8'}`}
+      className={`fan-in flex shrink-0 items-center justify-center ${vertical ? 'h-36' : 'h-8'} ${
+        concealed ? 'invisible' : ''
+      }`}
     >
       <div
         className={`flex items-center justify-center ${vertical ? 'flex-col' : ''} ${

@@ -20,6 +20,13 @@ export const ACTION_SOUNDS: Record<Action['type'], 'knock' | null> = {
   pass: 'knock',
 }
 
+export type DrawEvent = 'hop' | 'stop'
+
+export const DRAW_SOUNDS: Record<DrawEvent, 'tick' | 'chime'> = {
+  hop: 'tick',
+  stop: 'chime',
+}
+
 export function trackForMatch(state: MatchState | null): TrackId {
   return state ? GAME_TRACKS[state.game.id] : 'intro'
 }

@@ -109,6 +109,10 @@ const LOSE_NOTES = [69, 67, 64, 62, 60, 57]
 const WIN_STEP_SECONDS = 0.14
 const LOSE_STEP_SECONDS = 0.34
 const KNOCK_GAP_SECONDS = 0.16
+const TICK_NOTE = 84
+const TICK_SECONDS = 0.04
+const CHIME_NOTES = [79, 84, 88]
+const CHIME_STEP_SECONDS = 0.07
 
 function playKnock(context: AudioContext, output: AudioNode, time: number): void {
   const oscillator = context.createOscillator()
@@ -146,6 +150,8 @@ export interface Music {
   play: () => void
   pause: () => void
   knock: () => void
+  tick: () => void
+  chime: () => void
   jingle: (won: boolean) => void
   setTrack: (id: TrackId) => void
 }
@@ -195,6 +201,18 @@ export function createMusic(initial: TrackId = 'intro'): Music | null {
       const time = context.currentTime
       playKnock(context, output, time)
       playKnock(context, output, time + KNOCK_GAP_SECONDS)
+    },
+    tick() {
+      if (!context || !output) return
+      playTone(context, output, TICK_NOTE, context.currentTime, TICK_SECONDS, 'square', 0.05)
+    },
+    chime() {
+      if (!context || !output) return
+      const start = context.currentTime
+      CHIME_NOTES.forEach((note, index) => {
+        const time = start + index * CHIME_STEP_SECONDS
+        playTone(context!, output!, note, time, 0.4, 'triangle', 0.09)
+      })
     },
     jingle(won) {
       if (!context || !output) return

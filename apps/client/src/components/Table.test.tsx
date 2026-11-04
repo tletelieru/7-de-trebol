@@ -1,6 +1,33 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from '../App'
+import { RESULT_MS } from '../lib/dealerDraw'
+
+function wait(ms: number) {
+  act(() => {
+    vi.advanceTimersByTime(ms)
+  })
+}
+
+function skipDraw() {
+  while (lit()) {
+    act(() => {
+      vi.advanceTimersToNextTimer()
+    })
+  }
+}
+
+function savedDealer(): number {
+  return JSON.parse(localStorage.getItem('saved-match')!).state.dealer
+}
+
+function dealerName(seat: number) {
+  return seat === 0 ? 'You' : `Bot ${seat}`
+}
+
+function lit() {
+  return document.querySelector<HTMLElement>('[data-spotlight]')
+}
 
 function button(name: string) {
   return screen.queryByRole('button', { name })
@@ -79,9 +106,8 @@ describe('Table', () => {
   it('keeps an abandoned match in the history once a card was played', () => {
     render(<App />)
     fireEvent.click(screen.getByRole('button', { name: '4 players' }))
-    act(() => {
-      vi.advanceTimersByTime(1600)
-    })
+    skipDraw()
+    wait(1600)
     for (let step = 0; step < 6; step++) takeTurn()
     fireEvent.click(screen.getByRole('button', { name: 'Exit' }))
     fireEvent.click(screen.getByRole('button', { name: 'Yes, exit' }))
@@ -100,9 +126,8 @@ describe('Table', () => {
   it('comes back to the match after a reload', () => {
     render(<App />)
     fireEvent.click(screen.getByRole('button', { name: '4 players' }))
-    act(() => {
-      vi.advanceTimersByTime(1600)
-    })
+    skipDraw()
+    wait(1600)
     for (let step = 0; step < 6; step++) takeTurn()
     const hand = () =>
       [...screen.getByRole('region', { name: 'Your hand' }).querySelectorAll('[data-card]')]
@@ -129,11 +154,53 @@ describe('Table', () => {
     render(<App />)
     fireEvent.click(screen.getByRole('button', { name: '4 players' }))
     const hand = screen.getByRole('region', { name: 'Your hand' })
-    expect(hand.querySelector('.deal-in')).not.toBeNull()
-    act(() => {
-      vi.advanceTimersByTime(1600)
-    })
     expect(hand.querySelector('.deal-in')).toBeNull()
+    skipDraw()
+    expect(hand.querySelector('.deal-in')).not.toBeNull()
+    wait(1600)
+    expect(hand.querySelector('.deal-in')).toBeNull()
+  })
+
+  it.each(['3 players', '4 players'])('draws the dealer with %s', (label) => {
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: label }))
+    const dealer = savedDealer()
+    const seen: string[] = []
+    while (!screen.queryByText(/^Dealer: /)) {
+      seen.push(lit()?.textContent ?? '')
+      act(() => {
+        vi.advanceTimersToNextTimer()
+      })
+    }
+    expect(seen.length).toBeGreaterThan(Number(label[0]))
+    expect(screen.getByText(`Dealer: ${dealerName(dealer)}`)).toBeTruthy()
+    expect(lit()?.textContent).toContain(dealerName(dealer))
+    expect(screen.getByRole('region', { name: 'Your hand' }).querySelector('[data-card] .invisible')).not.toBeNull()
+    wait(RESULT_MS)
+    expect(screen.queryByText(/^Dealer: /)).toBeNull()
+    expect(lit()).toBeNull()
+  })
+
+  it('shows the dealer right away with animations off', () => {
+    localStorage.setItem('reduce-motion', 'on')
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: '4 players' }))
+    const dealer = savedDealer()
+    expect(screen.getByText(`Dealer: ${dealerName(dealer)}`)).toBeTruthy()
+    expect(lit()?.textContent).toContain(dealerName(dealer))
+    wait(RESULT_MS)
+    expect(screen.queryByText(/^Dealer: /)).toBeNull()
+  })
+
+  it('skips the draw for a restored match', () => {
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: '4 players' }))
+    cleanup()
+    render(<App />)
+    expect(screen.queryByText(/^Dealer: /)).toBeNull()
+    expect(lit()).toBeNull()
+    wait(1600)
+    expect(screen.getByRole('region', { name: 'Your hand' }).querySelector('[data-card] .invisible')).toBeNull()
   })
 
   it.each(['3 players', '4 players'])('plays a whole match with %s', { timeout: 120000 }, (label) => {

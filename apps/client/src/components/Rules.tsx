@@ -2,8 +2,11 @@ import { useState } from 'react'
 import { GAME_ORDER } from '@trebol/engine'
 import { useLocale, useMessages } from '../i18n/messages'
 import { rulesText } from '../i18n/rules'
+import { KeyCardContext } from '../lib/keyCards'
+import { GAME_EXAMPLES } from '../lib/ruleExamples'
 import { GameIcon } from './GameSymbol'
 import { Overlay } from './Overlay'
+import { RuleExample } from './RuleExample'
 
 const GAMES_TAB = 'games'
 
@@ -33,10 +36,13 @@ export function Rules({ onClose }: { onClose: () => void }) {
       </div>
       {section ? (
         <ul className="flex flex-col gap-2 text-sm leading-tight">
-          {section.rules.map((rule) => (
+          {section.rules.map(({ text: rule, example }) => (
             <li key={rule} className="flex gap-2">
               <span aria-hidden="true" className="mt-1 size-2 shrink-0 bg-gold" />
-              {rule}
+              <div className="min-w-0">
+                {rule}
+                {example && <RuleExample example={example} />}
+              </div>
             </li>
           ))}
         </ul>
@@ -50,6 +56,9 @@ export function Rules({ onClose }: { onClose: () => void }) {
                   {index + 1}. {t.games[game]}
                 </h3>
                 <p className="text-xs text-muted">{text.games[game]}</p>
+                <KeyCardContext value={game}>
+                  <RuleExample example={GAME_EXAMPLES[game]} />
+                </KeyCardContext>
               </div>
             </li>
           ))}
