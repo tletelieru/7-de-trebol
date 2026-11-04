@@ -10,11 +10,12 @@ import {
   startNextGame,
   viewFor,
 } from '@trebol/engine'
-import type { Action, Card, MatchState, PlayerCount } from '@trebol/engine'
+import type { Action, Card, MatchState, PlayerCount, Seat } from '@trebol/engine'
 import type { BotReply, BotRequest } from './botWorker'
+import { RESULT_MS, drawHops, prefersLessMotion } from './lib/dealerDraw'
 import { saveRecord } from './lib/history'
 import { clearSavedMatch, writeSavedMatch } from './lib/savedMatch'
-import { ACTION_SOUNDS, GAME_TRACKS, MusicContext, SoundContext } from './lib/sound'
+import { ACTION_SOUNDS, DRAW_SOUNDS, GAME_TRACKS, MusicContext, SoundContext } from './lib/sound'
 
 export const HUMAN = 0
 
@@ -54,10 +55,16 @@ export function useMatch(
   const [state, setState] = useState(() => restored ?? createMatch({ players }, seed))
   const [rng] = useState(() => createRng(seed))
   const [heldKey, setHeldKey] = useState<string | null>(null)
+  const [hops] = useState(() => drawHops(players, state.dealer))
+  const [drawStep, setDrawStep] = useState<number | null>(() => {
+    if (restored) return null
+    return prefersLessMotion() ? hops.length - 1 : 0
+  })
   const sound = useContext(SoundContext)
   const music = useContext(MusicContext)
   const key = holdKey(state)
-  const holding = key !== null && key !== heldKey
+  const holding = drawStep !== null || (key !== null && key !== heldKey)
+  const lastHop = hops.length - 1
 
   function finish(final: MatchState) {
     saveRecord({
@@ -81,7 +88,15 @@ export function useMatch(
     setState(next)
   }
 
+  function advanceDraw(step: number) {
+    const nextStep = step + 1
+    if (nextStep > lastHop) return setDrawStep(null)
+    sound?.[DRAW_SOUNDS[nextStep === lastHop ? 'stop' : 'hop']]()
+    setDrawStep(nextStep)
+  }
+
   const actFromBot = useEffectEvent(act)
+  const advanceDrawFromTimer = useEffectEvent(advanceDraw)
 
   // eslint-disable-next-line local/no-effect -- persists the match in progress to localStorage
   useEffect(() => {
@@ -89,8 +104,13 @@ export function useMatch(
     else writeSavedMatch({ state, seed, level })
   }, [state, seed, level])
 
-  // eslint-disable-next-line local/no-effect -- runs bot turns with timers and the bot Web Worker
+  // eslint-disable-next-line local/no-effect -- runs the dealer draw and bot turns with timers and the bot Web Worker
   useEffect(() => {
+    if (drawStep !== null) {
+      const wait = drawStep < lastHop ? hops[drawStep + 1].at - hops[drawStep].at : RESULT_MS
+      const timer = setTimeout(() => advanceDrawFromTimer(drawStep), wait)
+      return () => clearTimeout(timer)
+    }
     if (holding) {
       const timer = setTimeout(() => setHeldKey(key), isFresh(state) ? DEAL_HOLD : TRICK_HOLD)
       return () => clearTimeout(timer)
@@ -128,14 +148,18 @@ export function useMatch(
       clearTimeout(timer)
       worker.onmessage = null
     }
-  }, [state, holding, key, rng, level])
+  }, [state, holding, key, rng, level, drawStep, hops, lastHop])
 
   const legal: Action[] = holding ? [] : legalActions(state, HUMAN)
+  const spotlight: Seat | null = drawStep === null ? null : hops[drawStep].seat
 
   return {
     state,
     holding,
-    dealing: holding && isFresh(state),
+    drawing: drawStep !== null,
+    spotlight,
+    drawnDealer: drawStep === lastHop ? state.dealer : null,
+    dealing: holding && drawStep === null && isFresh(state),
     legal,
     play: (card: Card) => act({ type: 'play', seat: HUMAN, card }),
     pass: () => act({ type: 'pass', seat: HUMAN }),

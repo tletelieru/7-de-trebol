@@ -28,6 +28,8 @@ import type { TextSize } from './lib/textSize'
 import { colorModeKey, pickColorMode, prefersDark } from './lib/theme'
 import type { ColorMode } from './lib/theme'
 import { Footer } from './components/Footer'
+import { OtherGamesAside, OtherGamesDialog } from './components/OtherGames'
+import { otherGamesKey, readOtherGames } from './lib/otherGames'
 import { Header } from './components/Header'
 import { History } from './components/History'
 import { Home } from './components/Home'
@@ -61,6 +63,12 @@ export default function App() {
   const [level, setLevel] = useState<Level>(readLevel)
   const [fourColors, setFourColors] = useState(readFourColors)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [otherGamesOn, setOtherGamesOn] = useState(readOtherGames)
+  const [otherGamesOpen, setOtherGamesOpen] = useState(false)
+  const showOtherGames = (next: boolean) => {
+    localStorage.setItem(otherGamesKey, next ? 'on' : 'off')
+    setOtherGamesOn(next)
+  }
   const [rulesOpen, setRulesOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
   const [reduceMotion, setReduceMotion] = useState(readReduceMotion)
@@ -111,16 +119,28 @@ export default function App() {
       <SoundContext value={musicOn ? music : null}>
       <div
         className={`mx-auto flex max-w-lg flex-col gap-3 p-4 ${
-          session ? 'h-dvh overflow-hidden' : 'min-h-dvh'
+          session ? 'h-dvh overflow-hidden' : 'relative min-h-dvh'
         }`}
       >
         <Header
+          otherGames={
+            session
+              ? null
+              : {
+                  on: otherGamesOn,
+                  onOpen: () => setOtherGamesOpen(true),
+                  onToggle: () => showOtherGames(!otherGamesOn),
+                }
+          }
+          textSize={textSize}
           onInstall={install}
           settingsOpen={settingsOpen}
           onSettings={() => setSettingsOpen(true)}
         />
         {settingsOpen && (
           <Settings
+            otherGames={otherGamesOn}
+            onOtherGames={showOtherGames}
             mode={mode}
             onToggleMode={() => {
               const next = mode === 'dark' ? 'light' : 'dark'
@@ -195,6 +215,8 @@ export default function App() {
                 setSession({ players, seed: Date.now() | 0, level, restored: null })
               }}
             />
+            {otherGamesOn && <OtherGamesAside textSize={textSize} />}
+            {otherGamesOpen && <OtherGamesDialog onClose={() => setOtherGamesOpen(false)} />}
             <Footer />
           </>
         )}

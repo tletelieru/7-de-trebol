@@ -26,6 +26,8 @@ interface Props {
   plainFont: boolean
   onPlainFont: (next: boolean) => void
   onRules: () => void
+  otherGames: boolean
+  onOtherGames: (next: boolean) => void
   onClose: () => void
 }
 
@@ -54,6 +56,8 @@ export function Settings({
   plainFont,
   onPlainFont,
   onRules,
+  otherGames,
+  onOtherGames,
   onClose,
 }: Props) {
   const t = useMessages()
@@ -77,6 +81,7 @@ export function Settings({
   const toggles = [
     { label: t.highlight, hint: t.highlightHint, checked: highlight, onChange: onHighlight },
     { label: t.plainFont, hint: t.plainFontHint, checked: plainFont, onChange: onPlainFont },
+    { label: t.showOtherGames, hint: t.showOtherGamesHint, checked: otherGames, onChange: onOtherGames },
     { label: t.reduceMotion, hint: t.reduceMotionHint, checked: reduceMotion, onChange: onReduceMotion },
     { label: t.fourColors, hint: t.fourColorsHint, checked: fourColors, onChange: onFourColors },
   ]

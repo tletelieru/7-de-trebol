@@ -13,6 +13,8 @@ interface Props {
   legal: Action[]
   aceLow: boolean
   dealing: boolean
+  concealed: boolean
+  notice: string | null
   onPlay: (card: Card) => void
   onPass: () => void
 }
@@ -38,7 +40,17 @@ function isReducedMotion(): boolean {
   return document.documentElement.classList.contains('reduce-motion')
 }
 
-export function Hand({ header, hand, legal, aceLow, dealing, onPlay, onPass }: Props) {
+export function Hand({
+  header,
+  hand,
+  legal,
+  aceLow,
+  dealing,
+  concealed,
+  notice,
+  onPlay,
+  onPass,
+}: Props) {
   const t = useMessages()
   const [selected, setSelected] = useState<Card | null>(null)
   const [descending, setDescending] = useState(readDescending)
@@ -58,6 +70,9 @@ export function Hand({ header, hand, legal, aceLow, dealing, onPlay, onPass }: P
   const sortedKeys = sortHand(hand, aceLow, descending).map(cardKey)
   const isSorted = cards.every((card, index) => cardKey(card) === sortedKeys[index])
   const nextDescending = isSorted ? !descending : descending
+  let cardClass = ''
+  if (dealing) cardClass = 'deal-in'
+  if (concealed) cardClass = 'invisible'
 
   const applySort = () => {
     localStorage.setItem(sortOrderKey, nextDescending ? 'descending' : 'ascending')
@@ -204,9 +219,10 @@ export function Hand({ header, hand, legal, aceLow, dealing, onPlay, onPass }: P
       </div>
       <p
         aria-live="polite"
-        className={`w-full text-center text-sm font-medium text-gold ${myTurn ? '' : 'invisible'}`}
+        className="relative w-full text-center text-sm font-medium text-gold"
       >
-        {mustPass ? t.noMoves : t.yourTurn}
+        <span className={myTurn ? '' : 'invisible'}>{mustPass ? t.noMoves : t.yourTurn}</span>
+        {notice && <span className="score-pop absolute inset-x-0 top-0">{notice}</span>}
       </p>
       <div ref={grid} className="relative flex w-full flex-wrap content-start justify-center gap-1">
         {cards.map((card, index) => {
@@ -241,7 +257,7 @@ export function Hand({ header, hand, legal, aceLow, dealing, onPlay, onPass }: P
                 myTurn && !playable ? 'is-dimmed' : ''
               } ${dragging === key ? 'is-dragging' : ''}`}
             >
-              <span className={`block ${dealing ? 'deal-in' : ''}`}>
+              <span className={`block ${cardClass}`}>
                 <MiniCard card={card} highlight={picked} />
               </span>
             </button>

@@ -1,9 +1,16 @@
 import type { GameId } from '@trebol/engine'
+import { EXAMPLES } from '../lib/ruleExamples'
+import type { RuleExample } from '../lib/ruleExamples'
 import type { Locale } from './locales'
+
+export interface Rule {
+  text: string
+  example?: RuleExample
+}
 
 interface RuleSection {
   tab: string
-  rules: string[]
+  rules: Rule[]
 }
 
 interface RulesText {
@@ -19,28 +26,58 @@ export const rulesText: Record<Locale, RulesText> = {
       {
         tab: 'Basics',
         rules: [
-          'Trick-taking game with a standard deck, for 3 or 4 players.',
-          'With 4 players there are 13 tricks. With 3, the 2 of diamonds is removed and there are 17.',
-          'There are 6 games, always in the same order. Highest total after all six wins.',
-          'The last trick counts twice: its normal 10 plus the 50 for being last.',
+          {
+            text: 'Trick-taking game with a standard deck, for 3 or 4 players.',
+            example: EXAMPLES.deck,
+          },
+          {
+            text: 'With 4 players there are 13 tricks. With 3, the 2 of diamonds is removed and there are 17.',
+            example: EXAMPLES.removedTwo,
+          },
+          {
+            text: 'There are 6 games, always in the same order. Highest total after all six wins.',
+            example: EXAMPLES.gameOrder,
+          },
+          {
+            text: 'The last trick counts twice: its normal 10 plus the 50 for being last.',
+            example: EXAMPLES.lastTrick,
+          },
         ],
       },
       {
         tab: 'Deal',
         rules: [
-          'The first dealer is random.',
-          'Cards are dealt in two rounds: 6 and 7 with 4 players, 7 and 10 with 3 players.',
-          'The player to the right of the dealer leads.',
-          'In the next game, the player to the right deals. Everything goes counterclockwise.',
+          { text: 'The first dealer is random.', example: EXAMPLES.randomDealer },
+          {
+            text: 'Cards are dealt in two rounds: 6 and 7 with 4 players, 7 and 10 with 3 players.',
+            example: EXAMPLES.dealRounds,
+          },
+          { text: 'The player to the right of the dealer leads.', example: EXAMPLES.firstLead },
+          {
+            text: 'In the next game, the player to the right deals. Everything goes counterclockwise.',
+            example: EXAMPLES.nextDealer,
+          },
         ],
       },
       {
         tab: 'Tricks',
         rules: [
-          "You must follow suit. If you can't, play any card.",
-          'The trick goes to the highest card of the suit led. 2 is the lowest and Ace the highest.',
-          'There are no trumps, so a card off suit never wins the trick.',
-          'The leader can play any card, including hearts, queens or the 7 of clubs.',
+          {
+            text: "You must follow suit. If you can't, play any card.",
+            example: EXAMPLES.followSuit,
+          },
+          {
+            text: 'The trick goes to the highest card of the suit led. 2 is the lowest and Ace the highest.',
+            example: EXAMPLES.highestWins,
+          },
+          {
+            text: 'There are no trumps, so a card off suit never wins the trick.',
+            example: EXAMPLES.noTrumps,
+          },
+          {
+            text: 'The leader can play any card, including hearts, queens or the 7 of clubs.',
+            example: EXAMPLES.anyLead,
+          },
         ],
       },
     ],
@@ -60,28 +97,58 @@ export const rulesText: Record<Locale, RulesText> = {
       {
         tab: 'Básico',
         rules: [
-          'Juego de bazas con naipe inglés, para 3 o 4 jugadores.',
-          'Con 4 jugadores son 13 bazas. Con 3 se saca el 2 de caro y son 17.',
-          'Son 6 juegos, siempre en el mismo orden. Gana el mayor total al final de los seis.',
-          'La última baza cuenta doble: sus 10 de baza normal más los 50 de última.',
+          {
+            text: 'Juego de bazas con naipe inglés, para 3 o 4 jugadores.',
+            example: EXAMPLES.deck,
+          },
+          {
+            text: 'Con 4 jugadores son 13 bazas. Con 3 se saca el 2 de caro y son 17.',
+            example: EXAMPLES.removedTwo,
+          },
+          {
+            text: 'Son 6 juegos, siempre en el mismo orden. Gana el mayor total al final de los seis.',
+            example: EXAMPLES.gameOrder,
+          },
+          {
+            text: 'La última baza cuenta doble: sus 10 de baza normal más los 50 de última.',
+            example: EXAMPLES.lastTrick,
+          },
         ],
       },
       {
         tab: 'Reparto',
         rules: [
-          'El primer repartidor sale al azar.',
-          'Se reparte en dos tandas: 6 y 7 cartas con 4 jugadores, 7 y 10 con 3 jugadores.',
-          'Sale el jugador a la derecha del que repartió.',
-          'En el juego siguiente reparte el de la derecha. Todo va en sentido antihorario.',
+          { text: 'El primer repartidor sale al azar.', example: EXAMPLES.randomDealer },
+          {
+            text: 'Se reparte en dos tandas: 6 y 7 cartas con 4 jugadores, 7 y 10 con 3 jugadores.',
+            example: EXAMPLES.dealRounds,
+          },
+          { text: 'Sale el jugador a la derecha del que repartió.', example: EXAMPLES.firstLead },
+          {
+            text: 'En el juego siguiente reparte el de la derecha. Todo va en sentido antihorario.',
+            example: EXAMPLES.nextDealer,
+          },
         ],
       },
       {
         tab: 'Bazas',
         rules: [
-          'Es obligatorio seguir pinta. Si no se tiene, se tira cualquier carta.',
-          'Gana la carta más alta de la pinta que partió. El 2 es la más baja y el As la más alta.',
-          'No hay triunfo, así que quien no sigue pinta nunca gana la baza.',
-          'Quien parte puede tirar cualquier carta, incluso corazones, quinas o el 7 de trébol.',
+          {
+            text: 'Es obligatorio seguir pinta. Si no se tiene, se tira cualquier carta.',
+            example: EXAMPLES.followSuit,
+          },
+          {
+            text: 'Gana la carta más alta de la pinta que partió. El 2 es la más baja y el As la más alta.',
+            example: EXAMPLES.highestWins,
+          },
+          {
+            text: 'No hay triunfo, así que quien no sigue pinta nunca gana la baza.',
+            example: EXAMPLES.noTrumps,
+          },
+          {
+            text: 'Quien parte puede tirar cualquier carta, incluso corazones, quinas o el 7 de trébol.',
+            example: EXAMPLES.anyLead,
+          },
         ],
       },
     ],

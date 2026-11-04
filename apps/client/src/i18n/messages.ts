@@ -44,6 +44,7 @@ export interface Messages {
   pass: string
   passed: string
   dealer: string
+  dealerIs: (name: string) => string
   cardsLeft: (n: number) => string
   tricksWon: (n: number) => string
   dominoBoard: string
@@ -72,6 +73,10 @@ export interface Messages {
   language: string
   install: string
   developedBy: string
+  otherGames: string
+  showOtherGames: string
+  hideOtherGames: string
+  showOtherGamesHint: string
 }
 
 export const messages: Record<Locale, Messages> = {
@@ -132,6 +137,7 @@ export const messages: Record<Locale, Messages> = {
     pass: 'Pass',
     passed: 'Passed',
     dealer: 'Dealer',
+    dealerIs: (name) => `Dealer: ${name}`,
     cardsLeft: (n) => `${n} ${n === 1 ? 'card' : 'cards'}`,
     tricksWon: (n) => `${n} ${n === 1 ? 'trick' : 'tricks'}`,
     dominoBoard: 'Domino board',
@@ -160,6 +166,10 @@ export const messages: Record<Locale, Messages> = {
     language: 'Language',
     install: 'Install app',
     developedBy: 'Developed by',
+    otherGames: 'Other games',
+    showOtherGames: 'Show other games',
+    hideOtherGames: 'Hide other games',
+    showOtherGamesHint: 'Links to the other card games: a side column on wide screens, a header button on narrow ones.',
   },
   es: {
     appName: '7 de Trébol',
@@ -218,6 +228,7 @@ export const messages: Record<Locale, Messages> = {
     pass: 'Pasar',
     passed: 'Pasa',
     dealer: 'Repartidor',
+    dealerIs: (name) => `Da: ${name}`,
     cardsLeft: (n) => `${n} ${n === 1 ? 'carta' : 'cartas'}`,
     tricksWon: (n) => `${n} ${n === 1 ? 'baza' : 'bazas'}`,
     dominoBoard: 'Mesa del dominó',
@@ -246,6 +257,10 @@ export const messages: Record<Locale, Messages> = {
     language: 'Idioma',
     install: 'Instalar app',
     developedBy: 'Desarrollado por',
+    otherGames: 'Otros juegos',
+    showOtherGames: 'Mostrar otros juegos',
+    hideOtherGames: 'Ocultar otros juegos',
+    showOtherGamesHint: 'Enlaces a los otros juegos de naipes: una columna lateral en pantallas anchas y un botón en la cabecera en las angostas.',
   },
 }
 
