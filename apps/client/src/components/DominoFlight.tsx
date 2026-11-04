@@ -16,6 +16,7 @@ function Flight({ card, seat, players }: { card: Card; seat: Seat; players: Play
   const from = SEAT_VECTOR[seatPosition(seat, players)]
   const style = { '--from-x': `${from.x}px`, '--from-y': `${from.y}px` } as CSSProperties
 
+  // eslint-disable-next-line local/no-effect -- measures the target cell in the DOM before paint to aim the flight
   useLayoutEffect(() => {
     const cell = document.querySelector(`[data-cell="${cardKey(card)}"]`)
     if (!cell || !flight.current) return

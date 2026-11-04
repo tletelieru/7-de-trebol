@@ -1,10 +1,20 @@
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useEffectEvent, useState } from 'react'
 import { BOTS, createRng } from '@trebol/bots'
 import type { Level } from '@trebol/bots'
-import { applyAction, createMatch, legalActions, startNextGame, viewFor } from '@trebol/engine'
+import {
+  applyAction,
+  createMatch,
+  legalActions,
+  matchTotals,
+  matchWinners,
+  startNextGame,
+  viewFor,
+} from '@trebol/engine'
 import type { Action, Card, MatchState, PlayerCount } from '@trebol/engine'
 import type { BotReply, BotRequest } from './botWorker'
+import { saveRecord } from './lib/history'
 import { clearSavedMatch, writeSavedMatch } from './lib/savedMatch'
+import { ACTION_SOUNDS, GAME_TRACKS, MusicContext, SoundContext } from './lib/sound'
 
 export const HUMAN = 0
 
@@ -44,14 +54,42 @@ export function useMatch(
   const [state, setState] = useState(() => restored ?? createMatch({ players }, seed))
   const [rng] = useState(() => createRng(seed))
   const [heldKey, setHeldKey] = useState<string | null>(null)
+  const sound = useContext(SoundContext)
+  const music = useContext(MusicContext)
   const key = holdKey(state)
   const holding = key !== null && key !== heldKey
 
+  function finish(final: MatchState) {
+    saveRecord({
+      id: seed,
+      finishedAt: Date.now(),
+      players,
+      level,
+      results: final.results,
+      totals: matchTotals(final),
+      winners: matchWinners(final),
+    })
+    const won = matchWinners(final).includes(HUMAN)
+    const wait = holdKey(final) === null ? 0 : TRICK_HOLD
+    setTimeout(() => sound?.jingle(won), wait)
+  }
+
+  function act(action: Action) {
+    const next = applyAction(state, action)
+    if (ACTION_SOUNDS[action.type] === 'knock') sound?.knock()
+    if (next.status === 'matchOver') finish(next)
+    setState(next)
+  }
+
+  const actFromBot = useEffectEvent(act)
+
+  // eslint-disable-next-line local/no-effect -- persists the match in progress to localStorage
   useEffect(() => {
     if (state.status === 'matchOver') clearSavedMatch()
     else writeSavedMatch({ state, seed, level })
   }, [state, seed, level])
 
+  // eslint-disable-next-line local/no-effect -- runs bot turns with timers and the bot Web Worker
   useEffect(() => {
     if (holding) {
       const timer = setTimeout(() => setHeldKey(key), isFresh(state) ? DEAL_HOLD : TRICK_HOLD)
@@ -65,7 +103,7 @@ export function useMatch(
     const worker = level === 'easy' ? null : botWorker()
     if (!worker) {
       const timer = setTimeout(() => {
-        setState(applyAction(state, BOTS[level].choose(view, actions, rng)))
+        actFromBot(BOTS[level].choose(view, actions, rng))
       }, delay)
       return () => clearTimeout(timer)
     }
@@ -73,7 +111,7 @@ export function useMatch(
     let delayed = false
     let reply: Action | null = null
     const commit = () => {
-      if (delayed && reply) setState(applyAction(state, reply))
+      if (delayed && reply) actFromBot(reply)
     }
     const timer = setTimeout(() => {
       delayed = true
@@ -99,8 +137,12 @@ export function useMatch(
     holding,
     dealing: holding && isFresh(state),
     legal,
-    play: (card: Card) => setState(applyAction(state, { type: 'play', seat: HUMAN, card })),
-    pass: () => setState(applyAction(state, { type: 'pass', seat: HUMAN })),
-    next: () => setState(startNextGame(state)),
+    play: (card: Card) => act({ type: 'play', seat: HUMAN, card }),
+    pass: () => act({ type: 'pass', seat: HUMAN }),
+    next: () => {
+      const nextGame = startNextGame(state)
+      music?.setTrack(GAME_TRACKS[nextGame.game.id])
+      setState(nextGame)
+    },
   }
 }

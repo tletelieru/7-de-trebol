@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useState } from 'react'
 import type { Level } from '@trebol/bots'
+import { GAME_ORDER } from '@trebol/engine'
 import type { MatchState, PlayerCount } from '@trebol/engine'
 import { useInstall } from './useInstall'
 import { pickLocale, preferredLocaleKey } from './i18n/locales'
@@ -21,7 +22,7 @@ import {
 } from './lib/settings'
 import { createMusic } from './lib/music'
 import { readSavedMatch } from './lib/savedMatch'
-import { SoundContext } from './lib/sound'
+import { GAME_TRACKS, MusicContext, SoundContext, trackForMatch } from './lib/sound'
 import { pickTextSize, textSizeKey, textSizeScale } from './lib/textSize'
 import type { TextSize } from './lib/textSize'
 import { colorModeKey, pickColorMode, prefersDark } from './lib/theme'
@@ -66,11 +67,12 @@ export default function App() {
   const [plainFont, setPlainFont] = useState(readPlainFont)
   const [highlight, setHighlight] = useState(readHighlight)
   const [musicOn, setMusicOn] = useState(readMusic)
-  const [music] = useState(createMusic)
+  const [music] = useState(() => createMusic(trackForMatch(session?.restored ?? null)))
   const [textSize, setTextSize] = useState<TextSize>(() =>
     pickTextSize(localStorage.getItem(textSizeKey)),
   )
 
+  // eslint-disable-next-line local/no-effect -- applies settings to <html>, which lives outside the React root
   useLayoutEffect(() => {
     document.documentElement.lang = locale
     document.documentElement.classList.toggle('dark', mode === 'dark')
@@ -81,6 +83,7 @@ export default function App() {
     document.documentElement.style.fontSize = textSizeScale[textSize]
   }, [locale, mode, fourColors, reduceMotion, plainFont, textSize])
 
+  // eslint-disable-next-line local/no-effect -- starts and pauses the Web Audio context with page visibility and the first user gesture
   useEffect(() => {
     if (!music || !musicOn) return
     const sync = () => {
@@ -104,6 +107,7 @@ export default function App() {
 
   return (
     <LocaleContext value={locale}>
+      <MusicContext value={music}>
       <SoundContext value={musicOn ? music : null}>
       <div
         className={`mx-auto flex max-w-lg flex-col gap-3 p-4 ${
@@ -171,7 +175,10 @@ export default function App() {
             level={session.level}
             highlight={highlight}
             restored={session.restored}
-            onExit={() => setSession(null)}
+            onExit={() => {
+              music?.setTrack('intro')
+              setSession(null)
+            }}
           />
         ) : (
           <>
@@ -183,13 +190,17 @@ export default function App() {
               }}
               onRules={() => setRulesOpen(true)}
               onHistory={() => setHistoryOpen(true)}
-              onStart={(players) => setSession({ players, seed: Date.now() | 0, level, restored: null })}
+              onStart={(players) => {
+                music?.setTrack(GAME_TRACKS[GAME_ORDER[0]])
+                setSession({ players, seed: Date.now() | 0, level, restored: null })
+              }}
             />
             <Footer />
           </>
         )}
       </div>
       </SoundContext>
+      </MusicContext>
     </LocaleContext>
   )
 }
